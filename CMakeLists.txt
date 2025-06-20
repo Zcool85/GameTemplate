@@ -20,6 +20,9 @@ endif()
 
 # ImGui for SFML
 set(IMGUI_SFML_FIND_SFML OFF)
+set(IMGUI_SFML_ENABLE_WARNINGS ON)
+#set(IMGUI_SFML_DISABLE_OBSOLETE_FUNCTIONS ON)
+set(IMGUI_SFML_IMGUI_DEMO OFF)
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui")
 # TODO add_subdirectory(external/imgui-sfml)
 

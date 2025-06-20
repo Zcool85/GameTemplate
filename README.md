@@ -19,6 +19,8 @@ brew install sfml
 
 And use this CMake template :
 
+*TODO* : To review...
+
 ```CMake
 cmake_minimum_required(VERSION 3.31)
 project(GameTemplate)
