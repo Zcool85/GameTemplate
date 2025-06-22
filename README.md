@@ -5,6 +5,10 @@
 - [ ] Organiser les classes
 - [ ] Créer la documentation du code
 
+## argparse
+
+Cf. [GitHub](https://github.com/p-ranav/argparse).
+
 ## SFML
 
 Cf. [Documentation](https://www.sfml-dev.org/documentation/3.0.1/).
@@ -93,3 +97,37 @@ Une fois que je me serais familiarisé avec la série YouTube, il faudra voir :
 2) Puis cet [article](https://austinmorlan.com/posts/entity_component_system/)
 
 3) vraie [implémentation](https://github.com/CppCon/CppCon2015/blob/master/Tutorials/Implementation%20of%20a%20component-based%20entity%20system%20in%20modern%20C%2B%2B/Source%20Code/p7.cpp)
+
+## Tips and Tricks
+
+[Mermaid](https://mermaid.js.org/syntax/classDiagram.html).
+
+```mermaid
+graph LR
+    A[Do you write docs?]
+    A -- Yes --> B[Use Writerside]
+    A -- No --> C[Tell us why]
+```
+
+```plantuml
+@startuml
+left to right direction
+
+class User {
+id : INTEGER
+..
+other_id : INTEGER
+}
+
+class Email {
+id : INTEGER
+..
+user_id : INTEGER
+address : INTEGER
+}
+
+User::id *-- Email::user_id
+@enduml
+```
+
+

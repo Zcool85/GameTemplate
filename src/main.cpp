@@ -1,30 +1,32 @@
+#include <filesystem>
+#include <argparse/argparse.hpp>
+
 #include "Ecs.h"
 #include "Game.h"
 #include "Observable.h"
 
-struct ButtonClickEvent
-{
+struct ButtonClickEvent {
     int x, y;
     std::string button_name;
 };
 
 DEFINE_EVENT(WindowResizeEvent,
-    int width, height;
+             int width, height;
 );
 
 DEFINE_EVENT(KeyPressEvent,
-    char key;
-    bool ctrl_pressed;
+             char key;
+             bool ctrl_pressed;
 );
 
 // Différents types d'observers pour démontrer la flexibilité
 class UILogger {
 public:
-    static void notify(const ButtonClickEvent& event) {
+    static void notify(const ButtonClickEvent &event) {
         std::println("Button '{}' clicked at ({}, {})", event.button_name, event.x, event.y);
     }
 
-    static void notify(const WindowResizeEvent& event) {
+    static void notify(const WindowResizeEvent &event) {
         std::println("Window resized to {}x{}", event.width, event.height);
     }
 };
@@ -33,14 +35,14 @@ class StatisticsCollector {
 public:
     int click_count = 0;
 
-    void operator()(const ButtonClickEvent& event) {
+    void operator()(const ButtonClickEvent &event) {
         ++click_count;
         std::println("Total clicks: {}", click_count);
     }
 };
 
 // Fonction lambda comme observer
-inline auto key_handler = [](const KeyPressEvent& event) {
+inline auto key_handler = [](const KeyPressEvent &event) {
     std::println("Key '{}' pressed (Ctrl: {})", event.key, event.ctrl_pressed ? "Yes" : "No");
 };
 
@@ -49,7 +51,7 @@ template<typename... EventTypes>
 class MultiEventHandler {
 public:
     template<typename EventType>
-    void notify(const EventType& event) {
+    void notify(const EventType &event) {
         std::println("Generic handler processing event");
         // Traitement générique ou spécialisé via if constexpr
         if constexpr (std::same_as<EventType, ButtonClickEvent>) {
@@ -59,11 +61,6 @@ public:
 };
 
 
-
-
-
-
-
 //
 // / Usage
 // /
@@ -71,9 +68,15 @@ public:
 // Components :
 //   Simple, logic-less, data-containing struct.
 
-struct CTransform { int x; };
-struct CVelocity {};
-struct CPosition {};
+struct CTransform {
+    int x;
+};
+
+struct CVelocity {
+};
+
+struct CPosition {
+};
 
 // ComponentList :
 //   Compile-time list of component types.
@@ -86,8 +89,11 @@ using MyComponentsList = ecs::ComponentList<
 // Tag :
 //   Simple, logic-less and data-less struct.
 
-struct Tag0 {};
-struct Tag1 {};
+struct Tag0 {
+};
+
+struct Tag1 {
+};
 
 // TagList :
 //   Compile-time list of tag types.
@@ -111,10 +117,14 @@ using S3 = ecs::Signature<CVelocity, Tag0, CPosition, Tag1>;
 using MySignatureList = ecs::SignatureList<S0, S1, S2, S3>;
 
 
+//
+// template<typename T>
+// T& lookup_or_default(libconfig::Config& config, std::string path, T& default_value) {
+//
+// }
 
 
-
-int main() {
+int main(int argc, char *argv[]) {
     // Création d'un observable supportant plusieurs types d'événements
     auto ui_observable = make_observable<ButtonClickEvent, WindowResizeEvent, KeyPressEvent>();
 
@@ -143,33 +153,29 @@ int main() {
     std::println("KeyPressEvent observers: {}", ui_observable.observer_count<KeyPressEvent>());
 
 
-
-
-
     using MySettings = ecs::Settings<MyComponentsList, MyTagList, MySignatureList>;
 
     std::cout << "Settings component count : " << MySettings::componentCount() << std::endl;
 
     std::cout << "Settings contains CTransform ? " << std::boolalpha
-    << MySettings::isComponent<CTransform>()
-    << " (" << MySettings::componentID<CTransform>() << ")" << std::endl;
+            << MySettings::isComponent<CTransform>()
+            << " (" << MySettings::componentID<CTransform>() << ")" << std::endl;
 
     std::cout << "Settings contains CPosition ? " << std::boolalpha
-    << MySettings::isComponent<CPosition>()
-    << " (" << MySettings::componentID<CPosition>() << ")" << std::endl;
+            << MySettings::isComponent<CPosition>()
+            << " (" << MySettings::componentID<CPosition>() << ")" << std::endl;
 
     std::cout << "Settings contains CVelocity ? " << std::boolalpha
-    << MySettings::isComponent<CVelocity>()
-    << " (" << MySettings::componentID<CVelocity>() << ")" << std::endl;
+            << MySettings::isComponent<CVelocity>()
+            << " (" << MySettings::componentID<CVelocity>() << ")" << std::endl;
 
 
     int wazaa = 42;
     int mNewCapacity = 3;
 
-    std::tuple<std::vector<int>, std::vector<int>, std::vector<int>> tuples;
+    std::tuple<std::vector<int>, std::vector<int>, std::vector<int> > tuples;
 
-    ecs::forTypesInTuple(tuples, [wazaa, mNewCapacity](auto& v)
-    {
+    ecs::forTypesInTuple(tuples, [wazaa, mNewCapacity](auto &v) {
         std::cout << "yo " << wazaa << "! new capa : " << mNewCapacity << std::endl;
         v.resize(mNewCapacity);
     });
@@ -177,7 +183,7 @@ int main() {
 
     ecs::Impl::ComponentStorage<MySettings> storage;
     storage.grow(4);
-    auto& t = storage.getComponent<CTransform>(ecs::DataIndex{1});
+    auto &t = storage.getComponent<CTransform>(ecs::DataIndex{1});
 
     std::cout << "CTransform(1).x = " << t.x << std::endl;
 
@@ -194,11 +200,38 @@ int main() {
     //                   >
     //               >, "");
 
+    /////////////////////////////////////////////////////////////////////////
+    ///// THE GAME
+    /////////////////////////////////////////////////////////////////////////
 
+    std::string configuration_file_path;
 
-    Game game;
+    argparse::ArgumentParser program(argv[0], "v1.0");
+
+    program.add_argument("-c", "--configuration-file")
+            .help("path to configuration file")
+            .default_value("config/game.conf")
+            .store_into(configuration_file_path);
+
+    program.add_description("Run the game.");
+    program.add_epilog("Made by Zéro Cool & Merlou.");
+
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::exception &err) {
+        std::cerr << err.what() << std::endl;
+        std::cerr << program;
+        return EXIT_FAILURE;
+    }
+
+    if (!std::filesystem::exists(configuration_file_path)) {
+        std::cerr << "Configuration file \"" << configuration_file_path << "\" don't exists !" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    Game game(configuration_file_path);
 
     game.run();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

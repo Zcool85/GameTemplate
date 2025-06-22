@@ -7,12 +7,15 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "tools/ConfigurationManager.h"
+
 class Game {
-    sf::RenderWindow window;
+    tools::ConfigurationManager configuration_manager_;
+    sf::RenderWindow window_;
     void update();
     void render();
 public:
-    Game();
+    explicit Game(const std::string& configuration_file_path);
     void run();
 };
 

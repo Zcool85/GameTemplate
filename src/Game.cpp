@@ -5,40 +5,56 @@
 #include "Game.h"
 
 void Game::update() {
-    while (const auto event = this->window.pollEvent()) {
+    while (const auto event = this->window_.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
-            this->window.close();
+            this->window_.close();
         }
     }
 }
 
 void Game::render() {
-    this->window.clear();
-    this->window.display();
+    this->window_.clear();
+    this->window_.display();
 }
 
-Game::Game() {
-    bool fullsreen = false;
+Game::Game(const std::string &configuration_file_path)
+    : configuration_manager_(configuration_file_path) {
+    auto &window_settings = configuration_manager_.get_window_settings();
+    auto &graphics_settings = configuration_manager_.get_graphics_settings();
 
-    if (fullsreen) {
-        this->window = sf::RenderWindow(sf::VideoMode({1728, 1117}),
-                                        "Test",
-                                        sf::State::Fullscreen,
-                                        {.antiAliasingLevel = 0});
+    if (window_settings.fullscreen) {
+        this->window_ = sf::RenderWindow(sf::VideoMode({
+                                                 static_cast<unsigned>(window_settings.width),
+                                                 static_cast<unsigned>(window_settings.height)
+                                             }
+                                         ),
+                                         window_settings.title,
+                                         sf::State::Fullscreen,
+                                         {
+                                             .antiAliasingLevel = static_cast<unsigned>(graphics_settings.
+                                                 anti_aliasing_level)
+                                         });
     } else {
-        this->window = sf::RenderWindow(sf::VideoMode({1728, 1117}),
-                                        "Test",
-                                        sf::Style::Titlebar | sf::Style::Close,
-                                        sf::State::Windowed,
-                                        {.antiAliasingLevel = 0});
+        this->window_ = sf::RenderWindow(sf::VideoMode({
+                                                 static_cast<unsigned>(window_settings.width),
+                                                 static_cast<unsigned>(window_settings.height)
+                                             }
+                                         ),
+                                         window_settings.title,
+                                         sf::Style::Titlebar | sf::Style::Close,
+                                         sf::State::Windowed,
+                                         {
+                                             .antiAliasingLevel = static_cast<unsigned>(graphics_settings.
+                                                 anti_aliasing_level)
+                                         });
     }
 
-    this->window.setFramerateLimit(60);
-    this->window.setVerticalSyncEnabled(true);
+    this->window_.setFramerateLimit(graphics_settings.framerate_limit);
+    this->window_.setVerticalSyncEnabled(graphics_settings.vertical_sync_enabled);
 }
 
 void Game::run() {
-    while (this->window.isOpen()) {
+    while (this->window_.isOpen()) {
         this->update();
         this->render();
     }
