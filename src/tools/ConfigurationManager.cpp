@@ -37,11 +37,11 @@ namespace tools {
         configuration_.lookupValue("graphics.vertical_sync_enabled", graphics_settings_.vertical_sync_enabled);
     }
 
-    auto ConfigurationManager::get_window_settings() -> WindowSettings & {
+    auto ConfigurationManager::getWindowSettings() -> WindowSettings & {
         return window_settings_;
     }
 
-    auto ConfigurationManager::get_graphics_settings() -> GraphicsSettings & {
+    auto ConfigurationManager::getGraphicsSettings() -> GraphicsSettings & {
         return graphics_settings_;
     }
 

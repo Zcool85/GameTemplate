@@ -1,0 +1,28 @@
+---
+title: Game configuration
+---
+classDiagram
+    note "namespace tools"
+    class ConfigurationManager {
+        -std:: string file_path_
+        -libconfig:: Config configuration_
+        +explicit ConfigurationManager(const std:: string &file_path)
+        +auto getWindowSettings() -> WindowSettings &
+        +auto getGraphicsSettings() -> GraphicsSettings &
+        +[[nodiscard]] auto Save() const -> bool;
+    }
+    class GraphicsSettings {
+        +int anti_aliasing_level = 0
+        +int framerate_limit = 60
+        +bool vertical_sync_enabled = false
+    }
+    class WindowSettings {
+        +std:: string title = "Default"
+        +bool fullscreen = false
+        +int width = 800
+        +int height = 600
+    }
+    ConfigurationManager --* GraphicsSettings
+    ConfigurationManager --* WindowSettings
+
+

@@ -30,9 +30,9 @@ namespace tools {
     public:
         explicit ConfigurationManager(const std::string &file_path);
 
-        auto get_window_settings() -> WindowSettings &;
+        auto getWindowSettings() -> WindowSettings &;
 
-        auto get_graphics_settings() -> GraphicsSettings &;
+        auto getGraphicsSettings() -> GraphicsSettings &;
 
         [[nodiscard]] auto Save() const -> bool;
     };
