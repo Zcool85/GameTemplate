@@ -3,7 +3,7 @@
 
 #include "Ecs.h"
 #include "Game.h"
-#include "Observable.h"
+#include "tools/Observable.h"
 
 struct ButtonClickEvent {
     int x, y;
@@ -22,11 +22,11 @@ DEFINE_EVENT(KeyPressEvent,
 // Différents types d'observers pour démontrer la flexibilité
 class UILogger {
 public:
-    static void notify(const ButtonClickEvent &event) {
+    void notify(const ButtonClickEvent &event) {
         std::println("Button '{}' clicked at ({}, {})", event.button_name, event.x, event.y);
     }
 
-    static void notify(const WindowResizeEvent &event) {
+    void notify(const WindowResizeEvent &event) {
         std::println("Window resized to {}x{}", event.width, event.height);
     }
 };
@@ -124,9 +124,9 @@ using MySignatureList = ecs::SignatureList<S0, S1, S2, S3>;
 // }
 
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     // Création d'un observable supportant plusieurs types d'événements
-    auto ui_observable = make_observable<ButtonClickEvent, WindowResizeEvent, KeyPressEvent>();
+    auto ui_observable = tools::make_observable<ButtonClickEvent, WindowResizeEvent, KeyPressEvent>();
 
     // Enregistrement de différents types d'observers
     UILogger logger;

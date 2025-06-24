@@ -4,6 +4,12 @@
 
 - [ ] Organiser les classes
 - [ ] Créer la documentation du code
+- [ ] Faire le rendu dans un thread
+  dédié [Documentation](https://www.sfml-dev.org/tutorials/2.0/window-opengl-fr.php#dessiner-depuis-un-thread)
+- [ ] Corriger l'erreur + warning suivant si usage d'OpenGL 4.1 :
+
+        Error. Unable to create the context. Retrying without shared context.
+        Warning. New context created without shared context.
 
 ## argparse
 

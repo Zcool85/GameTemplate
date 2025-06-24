@@ -9,6 +9,21 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # C++23
 set(CMAKE_CXX_STANDARD 23)
 
+# Détection du compilateur et de l'architecture
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    set(NATIVE_OPTIMIZATION_FLAGS "-march=native")
+
+    # Optimisations supplémentaires pour les compilateurs GCC/Clang
+    set(PERFORMANCE_FLAGS "-O3 -funroll-loops -ffast-math")
+
+elseif (MSVC)
+    # Équivalent MSVC
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
+        set(NATIVE_OPTIMIZATION_FLAGS "/arch:AVX2")
+    endif ()
+    set(PERFORMANCE_FLAGS "/O2 /Ob2")
+endif ()
+
 # argparse
 # fetch latest argparse
 include(FetchContent)
@@ -17,6 +32,10 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/p-ranav/argparse.git
 )
 FetchContent_MakeAvailable(argparse)
+
+if (APPLE)
+    add_compile_definitions(GL_SILENCE_DEPRECATION)
+endif ()
 
 # SFML
 find_package(SFML 3 REQUIRED COMPONENTS System Window Graphics Network Audio)
@@ -74,3 +93,8 @@ add_custom_target(copy-assets ALL
 )
 # Add copy-file target to this project dependencies
 add_dependencies(${PROJECT_NAME} copy-assets)
+
+message(STATUS "Compilateur: ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Type de build: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Standard C++: ${CMAKE_CXX_STANDARD}")

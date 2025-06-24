@@ -1,6 +1,6 @@
 add_library(SrcLib STATIC
-        Observable.cpp
-        Observable.h
+        tools/Observable.cpp
+        tools/Observable.h
         Ecs.cpp
         Ecs.h
         Game.cpp
@@ -9,6 +9,12 @@ add_library(SrcLib STATIC
         tools/ConfigurationManager.h
         tools/WindowSettings.h
         tools/GraphicsSettings.h
+        scenes/Scene.cpp
+        scenes/Scene.h
+        scenes/MainMenuScene.cpp
+        scenes/MainMenuScene.h
+        Types.h
+        Action.h
 )
 
 target_link_libraries(SrcLib PRIVATE

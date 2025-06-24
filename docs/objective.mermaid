@@ -1,0 +1,156 @@
+---
+title: Game engine architecture
+---
+classDiagram
+    direction TB
+
+    class GameEngine {
+        - scenes: map~string, Scene~
+        - window: sf:: RenderWindow
+        - assets: Assets
+        - currentScene: string
+        - running: bool
+        - init() void
+        - currentScene() "Scene *"
+        + run() void
+        + update() void
+        + quit() void
+        + changeScene(Scene) void
+        + getAssets() Assets &
+        + window() Window &
+        + sUserInput() void
+    }
+
+    class EntityManager {
+        - entities: vector~Entity *~
+        - entityMap: map~string, Entity *~
+        - toAdd: vector~Entity *~
+        - init() void
+        + update() void
+        + addEntity(args): "Entity *"
+        + getEntities(): vector~Entity *~ &
+        + getEntities(s): vector~Entity *~ &
+    }
+
+    class Scene {
+        <<abstract>>
+        - game: "GameEngine *"
+        - entities: EntityManager
+        - currentFrame: int
+        - actionMap: map<int, string>
+        - paused: bool
+        - hasEnded: bool
+        + update() void = 0*
+        + sDoAction(action) void = 0*
+        + sRender() void = 0*
+        + simulate(int) void
+        + doAction(action) void
+        + registerAction(action) void
+    }
+
+    class Scene_Play {
+        - levelPath: string
+        - player: "Entity *"
+        - playerConfig: PlayerConfig
+        - init() void
+        + update() void
+        - sAnimation() void
+        - sMovement() void
+        - sEnemySpawner() void
+        - sCollision() void
+        - sRender() void
+        - sDoAction(action) void
+        - sDebug() void
+    }
+
+    class Scene_Menu {
+        - menuStrings: vec~string~
+        - menuText: sf:: Text
+        - levelPaths: vec~string~
+        - menuIndex: int
+        - init() void
+        - update() void
+        - sRender() void
+        - sDoAction(action) void
+    }
+
+    class ComponentManager {
+        - components: tuple~C1, C2, ...~
+        - tag: string
+        - active: bool
+        - id: int
+        + destroy() void
+        + addComponent~C~() void
+        + hasComponent~C~() bool
+        + getComponent~C~() C &
+        + removeComponent~C~() void
+    }
+
+    class Assets {
+        - textures: map~string, sf::Texture~
+        - animations: map~string, Animation~
+        - sounds: map~string, sf::Sound~
+        - fonts: map~string, sf::Font~
+        + addTexture(name, path) void
+        + addAnimation(name, Animation) void
+        + addSound(name, path) void
+        + addFont(name, path) void
+        + getTexture(name) sf:: Texture &
+        + getAnimation(name) Animation &
+        + getSound(name) sf:: Sound &
+        + getFont(name) sf:: Font &
+    }
+
+    class Animation {
+        - sprite: sf:: Sprite
+        - frameCount: int
+        - currentFrame: int
+        - speed: int
+        - size: Vec2
+        - name: string
+        + update() void
+        + hasEnded() bool
+        + getName() string &
+        + getSize() Vec2 &
+        + getSprite() sf:: Sprite &
+    }
+
+    class Action {
+        - name: string
+        - type: string
+        + name() string &
+        + type() string &
+    }
+
+    class Physics {
+        + IsCollision(Entity, Entity) bool$
+        + IsIntersect(Line, Line) bool$
+        + IsInside(Vec2, Line) bool$
+    }
+
+    class Component {
+        <<interface>>
+    }
+
+    class CTransform {
+        + pos: Vec2
+        + velocity: Vec2
+        + scale: Vec2
+        + angle: double
+    }
+
+    class CBoundingBox {
+        + size: Vec2
+    }
+
+    GameEngine "*" *-- Scene: scenes
+    GameEngine "1" *-- Scene: currentScene
+    GameEngine "1" *-- Assets
+    Scene "1" *-- GameEngine: game
+    ComponentManager "*" *-- Component
+    Scene <|-- Scene_Play
+    Scene <|-- Scene_Menu
+    Scene "1" *-- EntityManager: entities
+    Assets "*" *-- Animation
+    Component <|-- CTransform
+    Component <|-- CBoundingBox

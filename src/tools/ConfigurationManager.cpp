@@ -32,7 +32,12 @@ namespace tools {
         configuration_.lookupValue("window.width", window_settings_.width);
         configuration_.lookupValue("window.height", window_settings_.height);
 
+        configuration_.lookupValue("graphics.depth_bits", graphics_settings_.depth_bits);
+        configuration_.lookupValue("graphics.stencil_bits", graphics_settings_.stencil_bits);
         configuration_.lookupValue("graphics.anti_aliasing_level", graphics_settings_.anti_aliasing_level);
+        configuration_.lookupValue("graphics.major_version", graphics_settings_.major_version);
+        configuration_.lookupValue("graphics.minor_version", graphics_settings_.minor_version);
+        configuration_.lookupValue("graphics.attribute_flags", graphics_settings_.attribute_flags);
         configuration_.lookupValue("graphics.framerate_limit", graphics_settings_.framerate_limit);
         configuration_.lookupValue("graphics.vertical_sync_enabled", graphics_settings_.vertical_sync_enabled);
     }
@@ -56,9 +61,17 @@ namespace tools {
             setValue(window_settings, "width", window_settings_.width, libconfig::Setting::TypeInt);
             setValue(window_settings, "height", window_settings_.height, libconfig::Setting::TypeInt);
 
+            setValue(graphics_settings, "depth_bits", graphics_settings_.depth_bits,
+                                 libconfig::Setting::TypeInt);
+            setValue(graphics_settings, "stencil_bits", graphics_settings_.stencil_bits,
+                                 libconfig::Setting::TypeInt);
             setValue(graphics_settings, "anti_aliasing_level", graphics_settings_.anti_aliasing_level,
-                     libconfig::Setting::TypeInt);
-            setValue(graphics_settings, "anti_aliasing_level", graphics_settings_.anti_aliasing_level,
+            libconfig::Setting::TypeInt);
+            setValue(graphics_settings, "major_version", graphics_settings_.major_version,
+            libconfig::Setting::TypeInt);
+            setValue(graphics_settings, "minor_version", graphics_settings_.minor_version,
+            libconfig::Setting::TypeInt);
+            setValue(graphics_settings, "attribute_flags", graphics_settings_.attribute_flags,
                      libconfig::Setting::TypeInt);
             setValue(graphics_settings, "framerate_limit", graphics_settings_.framerate_limit,
                      libconfig::Setting::TypeInt);
