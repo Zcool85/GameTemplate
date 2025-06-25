@@ -32,14 +32,19 @@ class Game {
     tools::ConfigurationManager configuration_manager_;
     // TODO : A changer en sf::Window ??
     sf::RenderWindow window_;
+    // TODO : Faire un Id fortement typé pour les identifiants de schène
     std::map<uint32_t, std::shared_ptr<Scene>> scenes_;
     bool running_;
     std::shared_ptr<Scene> current_scene_;
+    sf::Clock delta_clock_;
 
-    /// @brief Boucle de mise à jour des données
+    /// @brief Traite les inputs (clavier, souris, joystick...)
+    auto processInput() -> void;
+
+    /// @brief Mise à jour des données
     auto update() -> void;
 
-    /// @brief Boucle de mise à jour du rendu
+    /// @brief Mise à jour du rendu
     auto render() -> void;
 
 public:

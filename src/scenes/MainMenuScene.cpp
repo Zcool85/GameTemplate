@@ -12,3 +12,11 @@ MainMenuScene::MainMenuScene(const Game &game)
     registerAction(sf::Keyboard::Key::Q, "LEFT"_hash);
     registerAction(sf::Keyboard::Key::S, "DOWN"_hash);
 }
+
+auto MainMenuScene::update(const sf::Time& delta_time) -> void {
+
+}
+
+auto MainMenuScene::render() -> void {
+
+}

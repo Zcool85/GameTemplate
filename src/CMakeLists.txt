@@ -23,4 +23,5 @@ target_link_libraries(SrcLib PRIVATE
         SFML::System
         SFML::Window
         SFML::Network
+        ImGui-SFML::ImGui-SFML
 )

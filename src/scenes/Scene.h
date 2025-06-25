@@ -30,11 +30,12 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual auto update() -> void = 0;
+    virtual auto update(const sf::Time &delta_time) -> void = 0;
+
+    virtual auto render() -> void = 0;
 
     // Prefix 's' is for System
     //virtual auto sDoAction(action) -> void = 0;
-    virtual auto sRender() -> void = 0;
 
 
     // Call derived scene's update a given number of times

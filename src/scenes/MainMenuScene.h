@@ -21,15 +21,16 @@ class MainMenuScene final
 public:
     explicit MainMenuScene(const Game &game);
 
-    auto update() -> void override {}
+    auto update(const sf::Time& delta_time) -> void override;
 
-    auto sRender() -> void override {}
-    auto sAnimation() -> void {}
-    auto sMovement() -> void {}
-    auto sCollision() -> void {}
-    auto sGUI() -> void {}
+    auto render() -> void override;
 
-    auto sDoAction() -> void {}
+    // auto sAnimation() -> void {}
+    // auto sMovement() -> void {}
+    // auto sCollision() -> void {}
+    // auto sGUI() -> void {}
+    //
+    // auto sDoAction() -> void {}
 };
 
 
