@@ -73,9 +73,11 @@ struct CTransform {
 };
 
 struct CVelocity {
+    int value;
 };
 
 struct CPosition {
+    int value;
 };
 
 // ComponentList :
@@ -94,13 +96,16 @@ struct Tag0 {
 
 struct Tag1 {
 };
+struct TPlayer {
+};
 
 // TagList :
 //   Compile-time list of tag types.
 
 using MyTagList = ecs::TagList<
     Tag0,
-    Tag1
+    Tag1,
+    TPlayer
 >;
 
 // Signature
@@ -199,6 +204,20 @@ int main(const int argc, char *argv[]) {
     //               MySettings::Bitset
     //                   >
     //               >, "");
+
+
+    ecs::Impl::SignatureBitsetsStorage<MySettings> storage2;
+    auto& bs = storage2.getSignatureBitset<S2>();
+
+    // using EntityManager = ecs::Manager<MySettings>;
+    //
+    // EntityManager mgr;
+    //
+    // auto player(mgr.createIndex());
+    // mgr.addTag<TPlayer>(player);
+    //
+    // auto& pos(mgr.addComponent<CPosition>(player).value);
+
 
     /////////////////////////////////////////////////////////////////////////
     ///// THE GAME

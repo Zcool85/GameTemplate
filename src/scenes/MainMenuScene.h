@@ -4,6 +4,7 @@
 
 #ifndef MAINMENUSCENE_H
 #define MAINMENUSCENE_H
+
 #include "Scene.h"
 
 /// @brief Classe représentant la scène du menu principal du jeu

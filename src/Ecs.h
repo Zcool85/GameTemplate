@@ -114,13 +114,14 @@ public:
 template<typename... Ts>
 struct type_sequence { };
 
-// Template permettant d'excuter une fonction pour chaque type d'un tuple
+// Template permettant d'exécuter une fonction pour chaque type d'un tuple
 template<typename Tuple, typename F>
 constexpr void forTypesInTuple(Tuple&& tuple, F&& f) {
     std::apply([&f](auto&&... elements) {
         (f(elements), ...);
     }, std::forward<Tuple>(tuple));
 }
+
 
 
 // /////////////////////////////////////////////////////////////////////////////////
@@ -312,7 +313,7 @@ template<typename TSettings>
 struct SignatureBitsets
 {
     using Settings = TSettings;
-    using ThisType = SignatureBitsets<Settings>;
+    using ThisType = SignatureBitsets;
     using SignatureList = typename Settings::SignatureList;
     using Bitset = typename Settings::Bitset;
 
@@ -367,7 +368,6 @@ struct SignatureBitsets
 template<typename TSettings>
 class SignatureBitsetsStorage
 {
-private:
     using Settings = TSettings;
     using SignatureBitsets = typename Settings::SignatureBitsets;
     using SignatureList = typename SignatureBitsets::SignatureList;
@@ -537,10 +537,10 @@ struct Handle
 };
 
 
+// NOTE : Testé OK
 template<typename TSettings>
 class ComponentStorage
 {
-private:
     using Settings = TSettings;
     using ComponentList = typename Settings::ComponentList;
 
@@ -595,7 +595,6 @@ public:
 
         // Let's use C++14's `std::get` instead!
 
-        // TODO : Un jour il faudrait trouver une solution pour éviter le static_cast... (Donc conversion implicite en vector<T>::size_type
         return std::get<std::vector<T>>(vectors)[mI];
     }
 };
