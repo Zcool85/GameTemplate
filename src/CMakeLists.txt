@@ -15,6 +15,9 @@ add_library(SrcLib STATIC
         scenes/MainMenuScene.h
         Types.h
         Action.h
+        tools/strong_typedef.h
+        tools/for_each_type.h
+        tools/type_sequence.h
 )
 
 target_link_libraries(SrcLib PRIVATE

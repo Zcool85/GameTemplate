@@ -13,296 +13,38 @@
 #include <type_traits>
 #include <vector>
 
+#include "tools/for_each_type.h"
+#include "tools/strong_typedef.h"
+#include "tools/type_sequence.h"
+
 namespace ecs
 {
 
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Cette section permet de créer des types de données fortement typés
-// /
-
-template<typename T, typename Tag>
-class strong_typedef {
-    T value_;
-
-public:
-    using value_type = T;
-
-    strong_typedef() = default;
-    explicit strong_typedef(const T& val) : value_(val) {}
-    explicit strong_typedef(T&& val) : value_(std::move(val)) {}
-
-    T& get() & { return value_; }
-    [[nodiscard]] const T& get() const& { return value_; }
-    T&& get() && { return std::move(value_); }
-    [[nodiscard]] const T&& get() const&& { return std::move(value_); }
-
-    strong_typedef& operator+=(const strong_typedef& other)
-        requires requires(T a, T b) { a += b; }
-    {
-        value_ += other.value_;
-        return *this;
+    // Template permettant d'exécuter une fonction pour chaque type d'un tuple
+    template<typename Tuple, typename F>
+    constexpr void for_each_type(Tuple&& tuple, F&& f) {
+        std::apply([&f](auto&&... elements) {
+            (f(elements), ...);
+        }, std::forward<Tuple>(tuple));
     }
 
-    strong_typedef operator+(const strong_typedef& other) const
-        requires requires(T a, T b) { a + b; }
-    {
-        return strong_typedef(value_ + other.value_);
-    }
 
-    // Opérateurs de comparaison
-    auto operator<=>(const strong_typedef&) const = default;
 
-    // Opérateur de pré-incrémentation (++obj)
-    strong_typedef& operator++()
-        requires requires(T t) { ++t; }
-    {
-        ++value_;
-        return *this;
-    }
 
-    // Opérateur de post-incrémentation (obj++)
-    strong_typedef operator++(int)
-        requires requires(T t) { t++; }
-    {
-        strong_typedef temp(*this);
-        ++value_;
-        return temp;
-    }
+    // /////////////////////////////////////////////////////////////////////////////////
+    // /
+    // / raccourcis pour simplifier les usages
+    // /
+    template<typename... Ts> using ComponentList = type_sequence<Ts...>;
+    template<typename... Ts> using TagList = type_sequence<Ts...>;
+    template<typename... Ts> using Signature = type_sequence<Ts...>;
+    template<typename... Ts> using SignatureList = type_sequence<Ts...>;
 
-    // Opérateur de pré-décrémentation (--obj)
-    strong_typedef& operator--()
-        requires requires(T t) { --t; }
-    {
-        --value_;
-        return *this;
-    }
 
-    // Opérateur de post-décrémentation (obj--)
-    strong_typedef operator--(int)
-        requires requires(T t) { t--; }
-    {
-        strong_typedef temp(*this);
-        --value_;
-        return temp;
-    }
-
-    // Conversion explicite vers le type sous-jacent
-    //explicit operator T() const { return value_; }
-    // Conversion implicite permettent d'utiliser la structure en temps qu'index de vecteur
-    operator T() const { return value_; }
-
-    strong_typedef &operator=(int i)
-    {
-        value_ = i;
-        return *this;
-    }
-
-    // Fonction de hash pour pouvoir utiliser la donnée dans une map par exemple
-    struct hash {
-        std::size_t operator()(const strong_typedef& st) const {
-            return std::hash<T>{}(st.value_);
-        }
-    };
-};
-
-
-
-// Template permettant de déclarer une liste de type
-// Exemple : using MyListOfTypes = type_sequence<Type1, Type2, Type3, ...>;
-template<typename... Ts>
-struct type_sequence { };
-
-// Template permettant d'exécuter une fonction pour chaque type d'un tuple
-template<typename Tuple, typename F>
-constexpr void forTypesInTuple(Tuple&& tuple, F&& f) {
-    std::apply([&f](auto&&... elements) {
-        (f(elements), ...);
-    }, std::forward<Tuple>(tuple));
-}
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Cette section permet de vérifier qu'un type est présent dans un type_sequence
-// /
-template<typename T, typename T2>
-struct contains;
-
-// Template permettant d'identifier si un type T est présent dans une liste de type Ts
-template<typename T, typename... Ts>
-struct contains<T, type_sequence<Ts...>> : std::disjunction<std::is_same<T, Ts>...> { };
-
-
-// Exemple d'usage :
-// /
-// / using MyComponentsList = type_sequence<CTransform, CPosition>;
-// /
-// / bool list_contain_ctransform = contains<CTransform, MyComponentsList>::value;
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Cette section est pour déterminer combien de type il y a dans un type_sequence
-// /
-template<typename T>
-struct size;
-
-template<typename... Ts>
-struct size<type_sequence<Ts...>> {
-    static constexpr std::size_t value = sizeof...(Ts);
-};
-
-
-
-// Exemple d'usage :
-// /
-// / using MyComponentsList = type_sequence<CTransform, CPosition>;
-// /
-// / int type_count = size<MyComponentsList>>::value;
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Cette section est pour déterminer l'indice du type dans un type_sequence
-// /
-template<typename T, typename... Ts>
-struct index_of;
-
-template<typename T>
-struct index_of<T> : std::integral_constant<std::int32_t, -1> {};
-
-template<typename T, typename... Ts>
-struct index_of<T, type_sequence<Ts...>> : index_of<T, Ts...> { };
-
-template<typename T, typename U, typename... Us>
-struct index_of<T, U, Us...> {
-    static constexpr std::int32_t value = std::is_same_v<T, U> ? 0 : (index_of<T, Us...>::value != -1) ? index_of<T, Us...>::value + 1 : -1;
-};
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / raccourcis pour simplifier les usages
-// /
-template<typename... Ts> using ComponentList = type_sequence<Ts...>;
-template<typename... Ts> using TagList = type_sequence<Ts...>;
-template<typename... Ts> using Signature = type_sequence<Ts...>;
-template<typename... Ts> using SignatureList = type_sequence<Ts...>;
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Equivalent de MPL::Rename
-// /
-// template<typename... Ts>
-// struct type_sequence {};
-
-// Template générique pour "renommer" (transformer) un type template
-template<template<typename...> class Target, typename Source>
-struct rename;
-
-// Spécialisation pour type_sequence
-// template<template<typename...> class Target, typename... Args>
-// struct rename<Target, type_sequence<Args...>> {
-//     using type = Target<Args...>;
-// };
-
-// Spécialisation pour type_sequence
-template<template<typename...> class Target, typename... Args>
-struct rename<Target, type_sequence<Args...>> {
-    using type = Target<Args...>;
-};
-
-// Alias pour faciliter l'utilisation
-template<template<typename...> class Target, typename Source>
-using rename_t = typename rename<Target, Source>::type;
-
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Equivalent de MPL::Repeat
-// /
-// / TODO : Il y a probablement moyen de faire mieux...
-template <int N, typename T, typename SeqWithArgs>
-struct Append;
-
-template <int N, typename T, template <typename...> class Seq, typename... Args >
-struct Append<N, T, Seq<Args...> >
-{
-    using type = typename Append<N-1, T, Seq<T,Args...> >::type;
-};
-
-template <typename T, template<typename...> class Seq, typename... Args>
-struct Append<0, T, Seq<Args...> >
-{
-    using type = Seq<Args...>;
-};
-
-
-
-
-// /////////////////////////////////////////////////////////////////////////////////
-// /
-// / Equivalent de MPL::Filter
-// /
-
-// Implémentation simple de filter
-template<typename Sequence, template<typename> class Predicate>
-struct filter;
-
-// Spécialisation pour type_sequence
-template<typename... Types, template<typename> class Predicate>
-struct filter<type_sequence<Types...>, Predicate> {
-private:
-    // Helper pour filtrer récursivement
-    template<typename... Results>
-    struct filter_impl;
-
-    // Cas de base : plus de types à traiter
-    template<typename... Results>
-    struct filter_impl<type_sequence<Results...>> {
-        using type = type_sequence<Results...>;
-    };
-
-    // Cas récursif : traiter le premier type
-    template<typename... Results, typename First, typename... Rest>
-    struct filter_impl<type_sequence<Results...>, First, Rest...> {
-        using type = std::conditional_t<
-        Predicate<First>::value,
-        typename filter_impl<type_sequence<Results..., First>, Rest...>::type,
-        typename filter_impl<type_sequence<Results...>, Rest...>::type
-        >;
-    };
-
-public:
-    using type = typename filter_impl<type_sequence<>, Types...>::type;
-};
-
-// Alias pour faciliter l'utilisation
-template<typename Sequence, template<typename> class Predicate>
-using filter_t = typename filter<Sequence, Predicate>::type;
-
-
-
-
-
-
-
-
-
-using DataIndex = strong_typedef<std::size_t, struct DataIndexTag>;
-using EntityIndex = strong_typedef<std::size_t, struct EntityIndexTag>;
-using HandleDataIndex  = strong_typedef<std::size_t, struct HandleDataIndexTag>;
-using Counter = strong_typedef<int, struct CounterTag>;
+    using DataIndex = tools::strong_typedef<std::size_t, struct DataIndexTag>;
+    using EntityIndex = tools::strong_typedef<std::size_t, struct EntityIndexTag>;
+    using HandleDataIndex  = tools::strong_typedef<std::size_t, struct HandleDataIndexTag>;
+    using Counter = tools::strong_typedef<int, struct CounterTag>;
 
 
 
@@ -400,23 +142,25 @@ private:
 
         using SignatureTags = typename SignatureBitsets::template SignatureTags<T>;
 
-        forTypesInTuple<SignatureComponents>([this, &b](auto t)
-                                      {
-            b[Settings::template componentBit<typename decltype(t)::type>()] = true;
+        //forTypes<SignatureComponents>([this, &b](auto t) {
+        for_each_type<SignatureComponents>([&b]<typename U>() {
+            b[Settings::template componentBit<U>()] = true;
         });
 
-        forTypesInTuple<SignatureTags>([this, &b](auto t)
-                                {
-            b[Settings::template tagBit<typename decltype(t)::type>()] = true;
+        //forTypes<SignatureTags>([this, &b](auto t) {
+        for_each_type<SignatureTags>([&b]<typename U>() {
+            b[Settings::template tagBit<U>()] = true;
         });
     }
 
 public:
     SignatureBitsetsStorage() noexcept
     {
-        forTypesInTuple<SignatureList>([this](auto t)
-                                {
-            this->initializeBitset<typename decltype(t)::type>();
+        //forTypes<SignatureList>([this](auto t) {
+        for_each_type<SignatureList>([this]<typename T>() {
+            // t doit être de type Signature...
+            //this->initializeBitset<typename decltype(t)::type>();
+            this->initializeBitset<T>();
         });
     }
 };
@@ -566,6 +310,8 @@ class ComponentStorage
     // We need to "unpack" the contents of `ComponentList` in
     // `TupleOfVectors`. We can do that using `MPL::Rename`.
     //MPL::Rename<TupleOfVectors, ComponentList> vectors;
+    // On cherche ici à produire un tuple contenant des vecteurs de composants :
+    // std::tuple<std::vector<C1>, std::vector<C2>, std::vector<C3>> vectors;
     transformed_tuple_t<ComponentList> vectors;
 
     // That's it!
@@ -581,8 +327,7 @@ class ComponentStorage
 public:
     void grow(std::size_t mNewCapacity)
     {
-        forTypesInTuple(vectors, [this, mNewCapacity](auto& v)
-                        {
+        tools::for_each_type(vectors, [this, mNewCapacity](auto& v) {
             v.resize(mNewCapacity);
         });
     }
@@ -595,7 +340,7 @@ public:
 
         // Let's use C++14's `std::get` instead!
 
-        return std::get<std::vector<T>>(vectors)[mI];
+        return std::get<std::vector<T>>(vectors)[mI.get()];
     }
 };
 
@@ -1156,8 +901,18 @@ public:
 
 
 
-
-
+//
+// namespace std {
+//
+//     // template<typename T>
+//     // struct tuple_size;
+//
+//     template<typename... Ts>
+//     struct tuple_size<ecs::type_sequence<Ts...>> {
+//         static constexpr std::size_t value = sizeof...(Ts);
+//     };
+//
+// }
 
 
 

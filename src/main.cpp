@@ -3,6 +3,7 @@
 
 #include "Ecs.h"
 #include "Game.h"
+#include "tools/strong_typedef.h"
 #include "tools/Observable.h"
 
 struct ButtonClickEvent {
@@ -129,6 +130,26 @@ using MySignatureList = ecs::SignatureList<S0, S1, S2, S3>;
 // }
 
 
+
+
+
+
+
+template<typename T>
+struct transform_to_vector;
+
+template<template<typename...> class List, typename... Ts>
+struct transform_to_vector<List<Ts...>> {
+    using type = std::tuple<std::vector<Ts>...>;
+};
+
+template<typename type_sequence>
+using transformed_tuple_t = typename transform_to_vector<type_sequence>::type;
+
+
+
+
+
 int main(const int argc, char *argv[]) {
     // Création d'un observable supportant plusieurs types d'événements
     auto ui_observable = tools::make_observable<ButtonClickEvent, WindowResizeEvent, KeyPressEvent>();
@@ -175,15 +196,15 @@ int main(const int argc, char *argv[]) {
             << " (" << MySettings::componentID<CVelocity>() << ")" << std::endl;
 
 
-    int wazaa = 42;
-    int mNewCapacity = 3;
-
-    std::tuple<std::vector<int>, std::vector<int>, std::vector<int> > tuples;
-
-    ecs::forTypesInTuple(tuples, [wazaa, mNewCapacity](auto &v) {
-        std::cout << "yo " << wazaa << "! new capa : " << mNewCapacity << std::endl;
-        v.resize(mNewCapacity);
-    });
+    // int wazaa = 42;
+    // int mNewCapacity = 3;
+    //
+    // std::tuple<std::vector<int>, std::vector<int>, std::vector<int> > tuples;
+    //
+    // ecs::forTypesInTuple(tuples, [wazaa, mNewCapacity](auto &v) {
+    //     std::cout << "yo " << wazaa << "! new capa : " << mNewCapacity << std::endl;
+    //     v.resize(mNewCapacity);
+    // });
 
 
     ecs::Impl::ComponentStorage<MySettings> storage;
@@ -206,11 +227,53 @@ int main(const int argc, char *argv[]) {
     //               >, "");
 
 
-    ecs::Impl::SignatureBitsetsStorage<MySettings> storage2;
-    auto& bs = storage2.getSignatureBitset<S2>();
+    // ecs::Impl::SignatureBitsetsStorage<MySettings> storage2;
+    // auto &bs = storage2.getSignatureBitset<S2>();
 
-    // using EntityManager = ecs::Manager<MySettings>;
+    // Test strong_typedef
+
+    using TypeA = tools::strong_typedef<int, struct ATag>;
+    using TypeB = tools::strong_typedef<int, struct BTag>;
+
+    auto val0 = TypeA();
+    auto val1 = TypeA{1};
+    auto val2 = TypeB{2};
+    val2 = 10;
+    //val2 += 10;
+    val2 += val2;
+
+    static_assert(!std::is_same_v<TypeA, TypeB>, "Type not different");
+
+    val2.get()++;
+
+    std::cout << "val2 : " << val2.get() << std::endl;
+
+
+    //assert(val1 != val2, "Values must be different");
+
+    // using TypeSequence = ecs::type_sequence<int, float, std::string>;
     //
+    //
+    // // We need to "unpack" the contents of `ComponentList` in
+    // // `TupleOfVectors`. We can do that using `MPL::Rename`.
+    // //MPL::Rename<TupleOfVectors, ComponentList> vectors;
+    // // On cherche ici à produire un tuple contenant des vecteurs de composants :
+    // // std::tuple<std::vector<C1>, std::vector<C2>, std::vector<C3>> vectors;
+    // transformed_tuple_t<TypeSequence> vectors;
+    //
+    //
+    // ecs::for_each_type(vectors, [](auto &v) {
+    //     v.resize(3);
+    //     std::cout << "Type : " << typeid(v).name() << std::endl;
+    // });
+
+    using SignatureBitsets = typename MySettings::SignatureBitsets;
+    using BitsetStorage = typename SignatureBitsets::BitsetStorage;
+
+    static_assert(std::is_same_v<BitsetStorage, std::tuple<std::bitset<5>, std::bitset<5>, std::bitset<5>, std::bitset<5>>>, "");
+
+    using EntityManager = ecs::Manager<MySettings>;
+
     // EntityManager mgr;
     //
     // auto player(mgr.createIndex());
