@@ -19,31 +19,32 @@
 
 namespace ecs
 {
-
     // Template permettant d'exécuter une fonction pour chaque type d'un tuple
     template<typename Tuple, typename F>
-    constexpr void for_each_type(Tuple&& tuple, F&& f) {
-        std::apply([&f](auto&&... elements) {
+    constexpr void for_each_type(Tuple &&tuple, F &&f) {
+        std::apply([&f](auto &&... elements) {
             (f(elements), ...);
         }, std::forward<Tuple>(tuple));
     }
-
-
 
 
     // /////////////////////////////////////////////////////////////////////////////////
     // /
     // / raccourcis pour simplifier les usages
     // /
-    template<typename... Ts> using ComponentList = type_sequence<Ts...>;
-    template<typename... Ts> using TagList = type_sequence<Ts...>;
-    template<typename... Ts> using Signature = type_sequence<Ts...>;
-    template<typename... Ts> using SignatureList = type_sequence<Ts...>;
+    template<typename... Ts>
+    using ComponentList = type_sequence<Ts...>;
+    template<typename... Ts>
+    using TagList = type_sequence<Ts...>;
+    template<typename... Ts>
+    using Signature = type_sequence<Ts...>;
+    template<typename... Ts>
+    using SignatureList = type_sequence<Ts...>;
 
 
     using DataIndex = tools::strong_typedef<std::size_t, struct DataIndexTag>;
     using EntityIndex = tools::strong_typedef<std::size_t, struct EntityIndexTag>;
-    using HandleDataIndex  = tools::strong_typedef<std::size_t, struct HandleDataIndexTag>;
+    using HandleDataIndex = tools::strong_typedef<std::size_t, struct HandleDataIndexTag>;
     using Counter = tools::strong_typedef<int, struct CounterTag>;
 
 
@@ -154,8 +155,7 @@ private:
     }
 
 public:
-    SignatureBitsetsStorage() noexcept
-    {
+    SignatureBitsetsStorage() noexcept {
         //forTypes<SignatureList>([this](auto t) {
         for_each_type<SignatureList>([this]<typename T>() {
             // t doit être de type Signature...
@@ -325,9 +325,8 @@ class ComponentStorage
     // * Grow every vector.
     // * Get a component of a specific type via `DataIndex`.
 public:
-    void grow(std::size_t mNewCapacity)
-    {
-        tools::for_each_type(vectors, [this, mNewCapacity](auto& v) {
+    void grow(std::size_t mNewCapacity) {
+        tools::for_each_type(vectors, [this, mNewCapacity](auto &v) {
             v.resize(mNewCapacity);
         });
     }
@@ -340,7 +339,7 @@ public:
 
         // Let's use C++14's `std::get` instead!
 
-        return std::get<std::vector<T>>(vectors)[mI.get()];
+        return std::get<std::vector<T> >(vectors)[mI.get()];
     }
 };
 
@@ -897,8 +896,6 @@ public:
 
 // std::is_same_v<
 // ecs::Impl::SignatureBitsets<ecs::Settings<ecs::type_sequence<CTransform, CPosition>, ecs::type_sequence<Tag0, Tag1>, ecs::type_sequence<ecs::type_sequence<>, ecs::type_sequence<CTransform, CVelocity>, ecs::type_sequence<CTransform, CPosition, Tag0>, ecs::type_sequence<CVelocity, Tag0, CPosition, Tag1>>>>, std::tuple<std::bitset<4>, std::bitset<4>, std::bitset<4>, std::bitset<4>>>
-
-
 
 
 //

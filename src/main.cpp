@@ -130,24 +130,16 @@ using MySignatureList = ecs::SignatureList<S0, S1, S2, S3>;
 // }
 
 
-
-
-
-
-
 template<typename T>
 struct transform_to_vector;
 
 template<template<typename...> class List, typename... Ts>
-struct transform_to_vector<List<Ts...>> {
+struct transform_to_vector<List<Ts...> > {
     using type = std::tuple<std::vector<Ts>...>;
 };
 
 template<typename type_sequence>
 using transformed_tuple_t = typename transform_to_vector<type_sequence>::type;
-
-
-
 
 
 int main(const int argc, char *argv[]) {
@@ -270,7 +262,9 @@ int main(const int argc, char *argv[]) {
     using SignatureBitsets = typename MySettings::SignatureBitsets;
     using BitsetStorage = typename SignatureBitsets::BitsetStorage;
 
-    static_assert(std::is_same_v<BitsetStorage, std::tuple<std::bitset<5>, std::bitset<5>, std::bitset<5>, std::bitset<5>>>, "");
+    static_assert(
+        std::is_same_v<BitsetStorage, std::tuple<std::bitset<5>, std::bitset<5>, std::bitset<5>, std::bitset<5> > >,
+        "");
 
     using EntityManager = ecs::Manager<MySettings>;
 
