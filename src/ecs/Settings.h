@@ -14,7 +14,7 @@
 namespace ecs {
 
     /**
-     * @brief Classe de paramétrage utilisé par le Framework ECS
+     * @brief Classe de paramétrage utilisée par le Framework ECS
      *
      * Ce template permet de créer les settings utilisé par le Framework ECS.
      * Les settings contiennent la déclaration de tous les components, tous

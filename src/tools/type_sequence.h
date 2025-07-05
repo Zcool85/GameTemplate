@@ -12,7 +12,7 @@ namespace tools {
     // Template permettant de déclarer une liste de type
     // Exemple : using MyListOfTypes = TypeList<Type1, Type2, Type3, ...>;
     template<typename... Elements>
-    class TypeList
+    struct TypeList
     {
     };
 

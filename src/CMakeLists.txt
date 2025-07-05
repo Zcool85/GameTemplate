@@ -1,6 +1,6 @@
 add_library(SrcLib STATIC
         tools/Observable.h
-        Ecs.h
+        ecs/Ecs.h
         Game.cpp
         Game.h
         tools/ConfigurationManager.cpp
@@ -19,6 +19,13 @@ add_library(SrcLib STATIC
         ecs/Settings.h
         ecs/SignatureBitsets.h
         ecs/SignatureBitsetsStorage.h
+        ecs/StrongTypedefTags.h
+        ecs/ComponentStorage.h
+        ecs/EcsTypes.h
+        ecs/Entity.h
+        ecs/Manager.h
+        ecs/HandleData.h
+        ecs/Handle.h
 )
 
 target_link_libraries(SrcLib PRIVATE

@@ -7,6 +7,8 @@
 
 #include <tuple>
 
+#include "type_sequence.h"
+
 namespace tools {
 
     namespace impl {

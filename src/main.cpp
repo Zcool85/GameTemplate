@@ -1,10 +1,8 @@
 #include <filesystem>
 #include <argparse/argparse.hpp>
 
-#include "Ecs.h"
+#include "ecs/Ecs.h"
 #include "Game.h"
-#include "ecs/Settings.h"
-#include "tools/strong_typedef.h"
 #include "tools/Observable.h"
 
 struct ButtonClickEvent {
@@ -610,14 +608,21 @@ int main(const int argc, char *argv[]) {
     auto& pos(mgr.addComponent<CPosition>(player).value);
     pos = 42;
 
-    // // TODO : Ne fonctionne pas en runtime
-    // mgr.forEntitiesMatching<S1>([](auto& cTransform, auto& cVelocity) {
+    std::cout << "Entity count : " << mgr.getEntityCount() << std::endl;
+    std::cout << "Capacity : " << mgr.getCapacity() << std::endl;
+
+    mgr.refresh();
+    mgr.printState(std::cout);
+
+    // // TODO : Ne fonctionne pas
+    // mgr.forEntitiesMatching<S1>([](auto entity_index, auto& cTransform, auto& cVelocity) {
+    //     std::cout << "Entity : " << entity_index << std::endl;
     //     std::cout << "S1 : " << cTransform.x << std::endl;
     //     std::cout << "S1 : " << cVelocity.value << std::endl;
     // });
 
 
-
+    // TODO : Sortir tous les test dans un fichier à part
 
 
     /////////////////////////////////////////////////////////////////////////
