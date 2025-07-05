@@ -3,6 +3,7 @@
 
 #include "Ecs.h"
 #include "Game.h"
+#include "ecs/Settings.h"
 #include "tools/strong_typedef.h"
 #include "tools/Observable.h"
 
@@ -130,19 +131,359 @@ using MySignatureList = ecs::SignatureList<S0, S1, S2, S3>;
 // }
 
 
-template<typename T>
-struct transform_to_vector;
+// template<typename T>
+// struct transform_to_vector;
+//
+// template<template<typename...> class List, typename... Ts>
+// struct transform_to_vector<List<Ts...> > {
+//     using type = std::tuple<std::vector<Ts>...>;
+// };
+//
+// template<typename type_sequence>
+// using transformed_tuple_t = typename transform_to_vector<type_sequence>::type;
 
-template<template<typename...> class List, typename... Ts>
-struct transform_to_vector<List<Ts...> > {
-    using type = std::tuple<std::vector<Ts>...>;
+
+template<typename... Ts>
+using TupleOfVectors = std::tuple<std::vector<Ts>...>;
+
+void func() {
+    tools::rename_t<TupleOfVectors, MyComponentsList> vectors;
+
+    static_assert(std::is_same_v<
+        std::tuple<std::vector<CTransform>, std::vector<CPosition> >,
+        tools::rename_t<TupleOfVectors, MyComponentsList>
+    >);
+
+    std::size_t mNewCapacity = 5;
+
+    tools::for_each_type(vectors, [mNewCapacity](auto &v) {
+        v.resize(mNewCapacity);
+        std::cout << typeid(v).name() << " grow to " << mNewCapacity << std::endl;
+    });
+}
+
+
+template<typename T>
+using IsIntegral = std::is_integral<T>;
+
+
+template<typename T>
+class test_for {
+    template<typename U>
+    void test() noexcept {
+        std::cout << typeid(U).name() << " IN TEST SIGNATURE " << std::endl;
+    }
+
+public:
+    test_for() noexcept {
+        tools::for_each_type<T>([this]<typename Z>() {
+            std::cout << typeid(Z).name() << " SIGNATURE " << std::endl;
+            test<Z>();
+        });
+    }
 };
 
-template<typename type_sequence>
-using transformed_tuple_t = typename transform_to_vector<type_sequence>::type;
-
+void func2() {
+    test_for<MyTagList> test;
+}
 
 int main(const int argc, char *argv[]) {
+
+    func();
+    func2();
+
+    //
+    // Check Settings structure
+    //
+    using MySettings = ecs::Settings<MyComponentsList, MyTagList, MySignatureList>;
+
+    static_assert(tools::size<MyComponentsList>::value == 2);
+    static_assert(tools::size<S0>::value == 0);
+    static_assert(tools::size<S1>::value == 2);
+    static_assert(tools::size<S2>::value == 3);
+    static_assert(tools::size<S3>::value == 4);
+
+    static_assert(tools::size_v<MyComponentsList> == 2);
+    static_assert(tools::size_v<S0> == 0);
+    static_assert(tools::size_v<S1> == 2);
+    static_assert(tools::size_v<S2> == 3);
+    static_assert(tools::size_v<S3> == 4);
+
+    static_assert(std::is_same_v<tools::TypeList<CTransform, CPosition>, MySettings::ComponentList>,
+                  "Must have components list");
+    static_assert(std::is_same_v<tools::TypeList<Tag0, Tag1, TPlayer>, MySettings::TagList>,
+                  "Must have tags list");
+    static_assert(std::is_same_v<tools::TypeList<
+                      ecs::Signature<>,
+                      ecs::Signature<CTransform, CVelocity>,
+                      ecs::Signature<CTransform, CPosition, Tag0>,
+                      ecs::Signature<CVelocity, Tag0, CPosition, Tag1>
+                  >, MySettings::SignatureList>,
+                  "Must have signature list");
+
+    static_assert(std::is_same_v<
+                      ecs::impl::SignatureBitsets<
+                          ecs::Settings<
+                              tools::TypeList<CTransform, CPosition>,
+                              tools::TypeList<Tag0, Tag1, TPlayer>,
+                              tools::TypeList<
+                                  ecs::Signature<>,
+                                  ecs::Signature<CTransform, CVelocity>,
+                                  ecs::Signature<CTransform, CPosition, Tag0>,
+                                  ecs::Signature<CVelocity, Tag0, CPosition, Tag1>
+                              >
+                          >
+                      >,
+                      MySettings::SignatureBitsets>,
+                  "Must have signature bitsets");
+
+    static_assert(std::is_same_v<
+                      ecs::impl::SignatureBitsetsStorage<
+                          ecs::Settings<
+                              tools::TypeList<CTransform, CPosition>,
+                              tools::TypeList<Tag0, Tag1, TPlayer>,
+                              tools::TypeList<
+                                  ecs::Signature<>,
+                                  ecs::Signature<CTransform, CVelocity>,
+                                  ecs::Signature<CTransform, CPosition, Tag0>,
+                                  ecs::Signature<CVelocity, Tag0, CPosition, Tag1>
+                              >
+                          >
+                      >,
+                      MySettings::SignatureBitsetsStorage>,
+                  "Must have SignatureBitsetsStorage");
+
+    static_assert(MySettings::isComponent<CTransform>(), "");
+    static_assert(MySettings::isComponent<CPosition>(), "");
+    static_assert(!MySettings::isComponent<Tag0>(), "");
+    static_assert(!MySettings::isComponent<Tag1>(), "");
+    static_assert(!MySettings::isComponent<TPlayer>(), "");
+    static_assert(!MySettings::isComponent<ecs::Signature<> >(), "");
+    static_assert(!MySettings::isComponent<ecs::Signature<CTransform, CVelocity> >(), "");
+    static_assert(!MySettings::isComponent<ecs::Signature<CTransform, CPosition, Tag0> >(), "");
+    static_assert(!MySettings::isComponent<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >(), "");
+
+    static_assert(!MySettings::isTag<CTransform>(), "");
+    static_assert(!MySettings::isTag<CPosition>(), "");
+    static_assert(MySettings::isTag<Tag0>(), "");
+    static_assert(MySettings::isTag<Tag1>(), "");
+    static_assert(MySettings::isTag<TPlayer>(), "");
+    static_assert(!MySettings::isTag<ecs::Signature<> >(), "");
+    static_assert(!MySettings::isTag<ecs::Signature<CTransform, CVelocity> >(), "");
+    static_assert(!MySettings::isTag<ecs::Signature<CTransform, CPosition, Tag0> >(), "");
+    static_assert(!MySettings::isTag<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >(), "");
+
+    static_assert(!MySettings::isSignature<CTransform>(), "");
+    static_assert(!MySettings::isSignature<CPosition>(), "");
+    static_assert(!MySettings::isSignature<Tag0>(), "");
+    static_assert(!MySettings::isSignature<Tag1>(), "");
+    static_assert(!MySettings::isSignature<TPlayer>(), "");
+    static_assert(MySettings::isSignature<ecs::Signature<> >(), "");
+    static_assert(MySettings::isSignature<ecs::Signature<CTransform, CVelocity> >(), "");
+    static_assert(MySettings::isSignature<ecs::Signature<CTransform, CPosition, Tag0> >(), "");
+    static_assert(MySettings::isSignature<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >(), "");
+
+    static_assert(MySettings::componentCount() == 2, "");
+    static_assert(MySettings::tagCount() == 3, "");
+    static_assert(MySettings::signatureCount() == 4, "");
+
+    static_assert(MySettings::componentID<CTransform>() == 0, "");
+    static_assert(MySettings::componentID<CPosition>() == 1, "");
+    static_assert(MySettings::componentID<Tag0>() == -1, "");
+    static_assert(MySettings::componentID<Tag1>() == -1, "");
+    static_assert(MySettings::componentID<TPlayer>() == -1, "");
+    static_assert(MySettings::componentID<ecs::Signature<> >() == -1, "");
+    static_assert(MySettings::componentID<ecs::Signature<CTransform, CVelocity> >() == -1, "");
+    static_assert(MySettings::componentID<ecs::Signature<CTransform, CPosition, Tag0> >() == -1, "");
+    static_assert(MySettings::componentID<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >() == -1, "");
+
+    static_assert(MySettings::tagID<CTransform>() == -1, "");
+    static_assert(MySettings::tagID<CPosition>() == -1, "");
+    static_assert(MySettings::tagID<Tag0>() == 0, "");
+    static_assert(MySettings::tagID<Tag1>() == 1, "");
+    static_assert(MySettings::tagID<TPlayer>() == 2, "");
+    static_assert(MySettings::tagID<ecs::Signature<> >() == -1, "");
+    static_assert(MySettings::tagID<ecs::Signature<CTransform, CVelocity> >() == -1, "");
+    static_assert(MySettings::tagID<ecs::Signature<CTransform, CPosition, Tag0> >() == -1, "");
+    static_assert(MySettings::tagID<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >() == -1, "");
+
+    static_assert(MySettings::signatureID<CTransform>() == -1, "");
+    static_assert(MySettings::signatureID<CPosition>() == -1, "");
+    static_assert(MySettings::signatureID<Tag0>() == -1, "");
+    static_assert(MySettings::signatureID<Tag1>() == -1, "");
+    static_assert(MySettings::signatureID<TPlayer>() == -1, "");
+    static_assert(MySettings::signatureID<ecs::Signature<> >() == 0, "");
+    static_assert(MySettings::signatureID<ecs::Signature<CTransform, CVelocity> >() == 1, "");
+    static_assert(MySettings::signatureID<ecs::Signature<CTransform, CPosition, Tag0> >() == 2, "");
+    static_assert(MySettings::signatureID<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >() == 3, "");
+
+    static_assert(std::is_same_v<std::bitset<5>, MySettings::Bitset>, "");
+
+    static_assert(MySettings::componentBit<CTransform>() == 0, "");
+    static_assert(MySettings::componentBit<CPosition>() == 1, "");
+    static_assert(MySettings::componentBit<Tag0>() == -1, "");
+    static_assert(MySettings::componentBit<Tag1>() == -1, "");
+    static_assert(MySettings::componentBit<TPlayer>() == -1, "");
+    static_assert(MySettings::componentBit<ecs::Signature<> >() == -1, "");
+    static_assert(MySettings::componentBit<ecs::Signature<CTransform, CVelocity> >() == -1, "");
+    static_assert(MySettings::componentBit<ecs::Signature<CTransform, CPosition, Tag0> >() == -1, "");
+    static_assert(MySettings::componentBit<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >() == -1, "");
+
+    static_assert(MySettings::tagBit<CTransform>() == -1, "");
+    static_assert(MySettings::tagBit<CPosition>() == -1, "");
+    static_assert(MySettings::tagBit<Tag0>() == 2, "");
+    static_assert(MySettings::tagBit<Tag1>() == 3, "");
+    static_assert(MySettings::tagBit<TPlayer>() == 4, "");
+    static_assert(MySettings::tagBit<ecs::Signature<> >() == -1, "");
+    static_assert(MySettings::tagBit<ecs::Signature<CTransform, CVelocity> >() == -1, "");
+    static_assert(MySettings::tagBit<ecs::Signature<CTransform, CPosition, Tag0> >() == -1, "");
+    static_assert(MySettings::tagBit<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >() == -1, "");
+
+    // TODO : Il faudrait faire en sorte que chaque type soit unique dans les listes
+
+
+    //
+    // Check SignatureBitsets structure
+    //
+    static_assert(std::is_same_v<MySettings, MySettings::SignatureBitsets::Settings>, "");
+    static_assert(std::is_same_v<MySettings::SignatureBitsets, MySettings::SignatureBitsets::ThisType>, "");
+    static_assert(std::is_same_v<MySettings::SignatureList, MySettings::SignatureBitsets::SignatureList>, "");
+    static_assert(std::is_same_v<MySettings::Bitset, MySettings::SignatureBitsets::Bitset>, "");
+    static_assert(std::is_same_v<std::bitset<5>, MySettings::Bitset>, "");
+    static_assert(std::is_same_v<std::bitset<5>, MySettings::SignatureBitsets::Bitset>, "");
+
+    // Le tuple doit contenir autant de MySettings::Bitset que de signature dans les Settings
+    static_assert(std::is_same_v<
+                      std::tuple<
+                          std::bitset<5>,
+                          std::bitset<5>,
+                          std::bitset<5>,
+                          std::bitset<5>
+                      >,
+                      MySettings::SignatureBitsets::BitsetStorage>, "");
+
+    // Le tuple doit contenir autant de MySettings::Bitset que de signature dans les Settings
+    static_assert(std::is_same_v<
+                      std::tuple<
+                          MySettings::Bitset,
+                          MySettings::Bitset,
+                          MySettings::Bitset,
+                          MySettings::Bitset
+                      >,
+                      MySettings::SignatureBitsets::BitsetStorage>, "");
+
+    static_assert(MySettings::SignatureBitsets::IsComponentFilter<CTransform>::value, "");
+    static_assert(MySettings::SignatureBitsets::IsComponentFilter<CPosition>::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsComponentFilter<Tag0>::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsComponentFilter<Tag1>::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsComponentFilter<TPlayer>::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsComponentFilter<ecs::Signature<> >::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsComponentFilter<ecs::Signature<CTransform, CVelocity> >::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsComponentFilter<ecs::Signature<CTransform, CPosition, Tag0> >::value,
+                  "");
+    static_assert(
+        !MySettings::SignatureBitsets::IsComponentFilter<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >::value, "");
+
+    static_assert(!MySettings::SignatureBitsets::IsTagFilter<CTransform>::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsTagFilter<CPosition>::value, "");
+    static_assert(MySettings::SignatureBitsets::IsTagFilter<Tag0>::value, "");
+    static_assert(MySettings::SignatureBitsets::IsTagFilter<Tag1>::value, "");
+    static_assert(MySettings::SignatureBitsets::IsTagFilter<TPlayer>::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsTagFilter<ecs::Signature<> >::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsTagFilter<ecs::Signature<CTransform, CVelocity> >::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsTagFilter<ecs::Signature<CTransform, CPosition, Tag0> >::value, "");
+    static_assert(!MySettings::SignatureBitsets::IsTagFilter<ecs::Signature<CVelocity, Tag0, CPosition, Tag1> >::value,
+                  "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                      >,
+                      MySettings::SignatureBitsets::SignatureComponents<S0> >, "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                          CTransform
+                          // CVelocity // CVelocity n'est pas dans la ComponentList globale, il ne peut donc pas être dans la liste de sortie
+                      >,
+                      MySettings::SignatureBitsets::SignatureComponents<S1> >, "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                          CTransform,
+                          CPosition
+                      >,
+                      MySettings::SignatureBitsets::SignatureComponents<S2> >, "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                          // CVelocity // CVelocity n'est pas dans la ComponentList globale, il ne peut donc pas être dans la liste de sortie
+                          CPosition
+                      >,
+                      MySettings::SignatureBitsets::SignatureComponents<S3> >, "");
+
+
+    static_assert(std::is_same_v<tools::TypeList<
+                      >,
+                      MySettings::SignatureBitsets::SignatureTags<S0> >, "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                      >,
+                      MySettings::SignatureBitsets::SignatureTags<S1> >, "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                          Tag0
+                      >,
+                      MySettings::SignatureBitsets::SignatureTags<S2> >, "");
+
+    static_assert(std::is_same_v<tools::TypeList<
+                          Tag0,
+                          Tag1
+                      >,
+                      MySettings::SignatureBitsets::SignatureTags<S3> >, "");
+
+
+    using MyList = tools::TypeList<int, char *, char, bool, std::string>;
+
+
+    using filter_types = tools::filter_t<MyList, IsIntegral>;
+
+    static_assert(std::is_same_v<
+        filter_types,
+        tools::TypeList<int, char, bool>
+    >);
+
+
+    using test_index_of = tools::TypeList<CTransform, CVelocity, CPosition, int, ecs::Signature<CTransform> >;
+
+    static_assert(tools::index_of<CTransform, test_index_of>::value == 0);
+    static_assert(tools::index_of<CVelocity, test_index_of>::value == 1);
+    static_assert(tools::index_of<CPosition, test_index_of>::value == 2);
+    static_assert(tools::index_of<int, test_index_of>::value == 3);
+    static_assert(tools::index_of<ecs::Signature<CTransform>, test_index_of>::value == 4);
+    static_assert(tools::index_of<long, test_index_of>::value == -1);
+
+    using repeat_test = tools::repeat<3, std::bitset<2>, std::tuple<> >::type;
+
+    // tools::repeat
+    static_assert(std::is_same_v<
+        repeat_test,
+        std::tuple<std::bitset<2>, std::bitset<2>, std::bitset<2> >
+    >);
+
+
+    std::cout << "Settings component count : " << MySettings::componentCount() << std::endl;
+    std::cout << "Settings tag count : " << MySettings::tagCount() << std::endl;
+    std::cout << "Settings signature count : " << MySettings::signatureCount() << std::endl;
+
+    std::cout << "Settings contains CTransform ? " << std::boolalpha
+            << MySettings::isComponent<CTransform>()
+            << " (" << MySettings::componentID<CTransform>() << ")" << std::endl;
+
+    std::cout << "Settings contains CPosition ? " << std::boolalpha
+            << MySettings::isComponent<CPosition>()
+            << " (" << MySettings::componentID<CPosition>() << ")" << std::endl;
+
+    std::cout << "Settings contains CVelocity ? " << std::boolalpha
+            << MySettings::isComponent<CVelocity>()
+            << " (" << MySettings::componentID<CVelocity>() << ")" << std::endl;
+
+
     // Création d'un observable supportant plusieurs types d'événements
     auto ui_observable = tools::make_observable<ButtonClickEvent, WindowResizeEvent, KeyPressEvent>();
 
@@ -171,22 +512,6 @@ int main(const int argc, char *argv[]) {
     std::println("KeyPressEvent observers: {}", ui_observable.observer_count<KeyPressEvent>());
 
 
-    using MySettings = ecs::Settings<MyComponentsList, MyTagList, MySignatureList>;
-
-    std::cout << "Settings component count : " << MySettings::componentCount() << std::endl;
-
-    std::cout << "Settings contains CTransform ? " << std::boolalpha
-            << MySettings::isComponent<CTransform>()
-            << " (" << MySettings::componentID<CTransform>() << ")" << std::endl;
-
-    std::cout << "Settings contains CPosition ? " << std::boolalpha
-            << MySettings::isComponent<CPosition>()
-            << " (" << MySettings::componentID<CPosition>() << ")" << std::endl;
-
-    std::cout << "Settings contains CVelocity ? " << std::boolalpha
-            << MySettings::isComponent<CVelocity>()
-            << " (" << MySettings::componentID<CVelocity>() << ")" << std::endl;
-
 
     // int wazaa = 42;
     // int mNewCapacity = 3;
@@ -199,11 +524,20 @@ int main(const int argc, char *argv[]) {
     // });
 
 
-    ecs::Impl::ComponentStorage<MySettings> storage;
-    storage.grow(4);
-    auto &t = storage.getComponent<CTransform>(ecs::DataIndex{1});
+    ecs::impl::ComponentStorage<MySettings> storage;
 
-    std::cout << "CTransform(1).x = " << t.x << std::endl;
+    storage.grow(4);
+    for (std::size_t i = 0; i < 4; i++) {
+        auto &t = storage.getComponent<CTransform>(ecs::DataIndex{i});
+
+        std::cout << "CTransform(" << i << ").x = " << t.x << std::endl;
+        t.x = i;
+    }
+    for (std::size_t i = 0; i < 4; i++) {
+        auto &t = storage.getComponent<CTransform>(ecs::DataIndex{i});
+
+        std::cout << "CTransform(" << i << ").x = " << t.x << std::endl;
+    }
 
 
     //ecs::Impl::SignatureBitsets<MySettings> signature_bitsets;
@@ -268,12 +602,22 @@ int main(const int argc, char *argv[]) {
 
     using EntityManager = ecs::Manager<MySettings>;
 
-    // EntityManager mgr;
-    //
-    // auto player(mgr.createIndex());
-    // mgr.addTag<TPlayer>(player);
-    //
-    // auto& pos(mgr.addComponent<CPosition>(player).value);
+    EntityManager mgr;
+
+    auto player(mgr.createIndex());
+    mgr.addTag<TPlayer>(player);
+
+    auto& pos(mgr.addComponent<CPosition>(player).value);
+    pos = 42;
+
+    // // TODO : Ne fonctionne pas en runtime
+    // mgr.forEntitiesMatching<S1>([](auto& cTransform, auto& cVelocity) {
+    //     std::cout << "S1 : " << cTransform.x << std::endl;
+    //     std::cout << "S1 : " << cVelocity.value << std::endl;
+    // });
+
+
+
 
 
     /////////////////////////////////////////////////////////////////////////

@@ -53,22 +53,6 @@ namespace tools {
 
 
 
-    template<typename T, typename... Ts>
-    struct index_of;
-
-    template<typename T>
-    struct index_of<T> : std::integral_constant<std::int32_t, -1> {};
-
-    // template<typename T, typename... Ts>
-    // struct index_of<T, type_sequence<Ts...>> : index_of<T, Ts...> { };
-
-    template<typename T, typename U, typename... Us>
-    struct index_of<T, U, Us...> {
-        static constexpr std::int32_t value = std::is_same_v<T, U> ? 0 : (index_of<T, Us...>::value != -1) ? index_of<T, Us...>::value + 1 : -1;
-    };
-
-
-
     // Observable principal utilisant la métaprogrammation
     template<Event... EventTypes>
     class Observable {

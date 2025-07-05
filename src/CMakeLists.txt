@@ -1,7 +1,5 @@
 add_library(SrcLib STATIC
-        tools/Observable.cpp
         tools/Observable.h
-        Ecs.cpp
         Ecs.h
         Game.cpp
         Game.h
@@ -18,6 +16,9 @@ add_library(SrcLib STATIC
         tools/strong_typedef.h
         tools/for_each_type.h
         tools/type_sequence.h
+        ecs/Settings.h
+        ecs/SignatureBitsets.h
+        ecs/SignatureBitsetsStorage.h
 )
 
 target_link_libraries(SrcLib PRIVATE

@@ -8,38 +8,28 @@
 // Inspirations = https://github.com/CppCon/CppCon2015/blob/master/Tutorials/Implementation%20of%20a%20component-based%20entity%20system%20in%20modern%20C%2B%2B/Source%20Code/p3.cpp
 
 #include <cassert>
-#include <iostream>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
+#include "ecs/Settings.h"
 #include "tools/for_each_type.h"
 #include "tools/strong_typedef.h"
 #include "tools/type_sequence.h"
 
 namespace ecs
 {
-    // Template permettant d'exécuter une fonction pour chaque type d'un tuple
-    template<typename Tuple, typename F>
-    constexpr void for_each_type(Tuple &&tuple, F &&f) {
-        std::apply([&f](auto &&... elements) {
-            (f(elements), ...);
-        }, std::forward<Tuple>(tuple));
-    }
-
-
     // /////////////////////////////////////////////////////////////////////////////////
     // /
     // / raccourcis pour simplifier les usages
     // /
     template<typename... Ts>
-    using ComponentList = type_sequence<Ts...>;
+    using ComponentList = tools::TypeList<Ts...>;
     template<typename... Ts>
-    using TagList = type_sequence<Ts...>;
+    using TagList = tools::TypeList<Ts...>;
     template<typename... Ts>
-    using Signature = type_sequence<Ts...>;
+    using Signature = tools::TypeList<Ts...>;
     template<typename... Ts>
-    using SignatureList = type_sequence<Ts...>;
+    using SignatureList = tools::TypeList<Ts...>;
 
 
     using DataIndex = tools::strong_typedef<std::size_t, struct DataIndexTag>;
@@ -49,204 +39,9 @@ namespace ecs
 
 
 
-// TODO : Bien comprendre ce bloc...
-namespace Impl
-{
-template<typename TSettings>
-struct SignatureBitsets
-{
-    using Settings = TSettings;
-    using ThisType = SignatureBitsets;
-    using SignatureList = typename Settings::SignatureList;
-    using Bitset = typename Settings::Bitset;
-
-    // TODO : A tester en static_assets std::is_same<..., std::tuple<Bitset, Bitset, ...>>
-    using BitsetStorage = Append<Settings::signatureCount(), Bitset, std::tuple<>>::type;
-    //    using BitsetStorage = std::tuple
-    //    <
-    //        MPL::Repeat
-    //        <
-    //            Settings::signatureCount(),
-    //            Bitset
-    //        >
-    //    >;
-
-    template<typename T>
-    using IsComponentFilter = std::integral_constant
-    <
-        bool, Settings::template isComponent<T>()
-    >;
-
-    template<typename T>
-    using IsTagFilter = std::integral_constant
-    <
-        bool, Settings::template isTag<T>()
-    >;
-
-    template<typename TSignature>
-    using SignatureComponents = filter_t
-    <
-        TSignature,
-        IsComponentFilter
-    >;
-    //    using SignatureComponents = MPL::Filter
-    //    <
-    //        IsComponentFilter,
-    //        TSignature
-    //    >;
-
-    template<typename TSignature>
-    using SignatureTags = filter_t
-    <
-        TSignature,
-        IsTagFilter
-    >;
-    //    using SignatureTags = MPL::Filter
-    //    <
-    //        IsTagFilter,
-    //        TSignature
-    //    >;
-};
-
-template<typename TSettings>
-class SignatureBitsetsStorage
-{
-    using Settings = TSettings;
-    using SignatureBitsets = typename Settings::SignatureBitsets;
-    using SignatureList = typename SignatureBitsets::SignatureList;
-    using BitsetStorage = typename SignatureBitsets::BitsetStorage;
-
-    BitsetStorage storage;
-
-public:
-    template<typename T>
-    auto& getSignatureBitset() noexcept
-    {
-        static_assert(Settings::template isSignature<T>(), "");
-        return std::get<Settings::template signatureID<T>()>(storage);
-    }
-
-    template<typename T>
-    const auto& getSignatureBitset() const noexcept
-    {
-        static_assert(Settings::template isSignature<T>(), "");
-        return std::get<Settings::template signatureID<T>()>(storage);
-    }
-
-private:
-    template<typename T>
-    void initializeBitset() noexcept
-    {
-        auto& b(this->getSignatureBitset<T>());
-
-        using SignatureComponents = typename SignatureBitsets::template SignatureComponents<T>;
-
-        using SignatureTags = typename SignatureBitsets::template SignatureTags<T>;
-
-        //forTypes<SignatureComponents>([this, &b](auto t) {
-        for_each_type<SignatureComponents>([&b]<typename U>() {
-            b[Settings::template componentBit<U>()] = true;
-        });
-
-        //forTypes<SignatureTags>([this, &b](auto t) {
-        for_each_type<SignatureTags>([&b]<typename U>() {
-            b[Settings::template tagBit<U>()] = true;
-        });
-    }
-
-public:
-    SignatureBitsetsStorage() noexcept {
-        //forTypes<SignatureList>([this](auto t) {
-        for_each_type<SignatureList>([this]<typename T>() {
-            // t doit être de type Signature...
-            //this->initializeBitset<typename decltype(t)::type>();
-            this->initializeBitset<T>();
-        });
-    }
-};
-}
 
 
 
-
-
-template
-<
-    typename TComponentList,
-    typename TTagList,
-    typename TSignatureList
->
-struct Settings
-{
-    using ComponentList = class TComponentList::type_sequence;
-    using TagList = class TTagList::type_sequence;
-    using SignatureList = class TSignatureList::type_sequence;
-    using ThisType = Settings<ComponentList, TagList, SignatureList>;
-
-    using SignatureBitsets = Impl::SignatureBitsets<ThisType>;
-    using SignatureBitsetsStorage = Impl::SignatureBitsetsStorage<ThisType>;
-
-    // "Type traits".
-    template<typename T>
-    static constexpr bool isComponent() noexcept
-    {
-        return contains<T, ComponentList>::value;
-    }
-    template<typename T>
-    static constexpr bool isTag() noexcept
-    {
-        return contains<T, TagList>::value;
-    }
-    template<typename T>
-    static constexpr bool isSignature() noexcept
-    {
-        return contains<T, SignatureList>::value;
-    }
-
-    // Count of the various elements.
-    static constexpr std::size_t componentCount() noexcept
-    {
-        return size<ComponentList>::value;
-    }
-    static constexpr std::size_t tagCount() noexcept
-    {
-        return size<TagList>::value;
-    }
-    static constexpr std::size_t signatureCount() noexcept
-    {
-        return size<SignatureList>::value;
-    }
-
-    // Unique IDs for the various elements.
-    template<typename T>
-    static constexpr std::int32_t componentID() noexcept
-    {
-        return index_of<T, ComponentList>::value;
-    }
-    template<typename T>
-    static constexpr std::int32_t tagID() noexcept
-    {
-        return index_of<T, TagList>::value;
-    }
-    template<typename T>
-    static constexpr std::int32_t signatureID() noexcept
-    {
-        return index_of<T, SignatureList>::value;
-    }
-
-    using Bitset = std::bitset<componentCount() + tagCount()>;
-
-    template<typename T>
-    static constexpr std::size_t componentBit() noexcept
-    {
-        return componentID<T>();
-    }
-    template<typename T>
-    static constexpr std::size_t tagBit() noexcept
-    {
-        return componentCount() + tagID<T>();
-    }
-};
 
 
 
@@ -254,9 +49,8 @@ struct Settings
 // /
 // / Section liée à la définition d'une entity
 // /
-namespace Impl
-{
-template<typename TSettings>
+namespace impl {
+    template<typename TSettings>
 struct Entity
 {
     using Settings = TSettings;
@@ -294,25 +88,14 @@ class ComponentStorage
     // We know the types of the components at compile-time.
     // Therefore, we can use `std::tuple`.
 
-    //    template<typename... Ts>
-    //    using TupleOfVectors = std::tuple<std::vector<Ts>...>;
-    template<typename type_sequence>
-    struct transform_to_vector;
-
-    template<template<typename...> class List, typename... Ts>
-    struct transform_to_vector<List<Ts...>> {
-        using type = std::tuple<std::vector<Ts>...>;
-    };
-
-    template<typename type_sequence>
-    using transformed_tuple_t = typename transform_to_vector<type_sequence>::type;
+    template<typename... Ts>
+    using TupleOfVectors = std::tuple<std::vector<Ts>...>;
 
     // We need to "unpack" the contents of `ComponentList` in
-    // `TupleOfVectors`. We can do that using `MPL::Rename`.
-    //MPL::Rename<TupleOfVectors, ComponentList> vectors;
+    // `TupleOfVectors`.
     // On cherche ici à produire un tuple contenant des vecteurs de composants :
     // std::tuple<std::vector<C1>, std::vector<C2>, std::vector<C3>> vectors;
-    transformed_tuple_t<ComponentList> vectors;
+    tools::rename_t<TupleOfVectors, ComponentList> vectors;
 
     // That's it!
     // We have separate contiguous storage for all component
@@ -334,11 +117,12 @@ public:
     template<typename T>
     auto& getComponent(DataIndex mI) noexcept
     {
+        static_assert(tools::contains_v<T, ComponentList>);
+
         // We need to get the correct vector, depending on `T`.
         // Compile-time recursion? Nah.
 
         // Let's use C++14's `std::get` instead!
-
         return std::get<std::vector<T> >(vectors)[mI.get()];
     }
 };
@@ -361,15 +145,15 @@ private:
     using Settings = TSettings;
     using ThisType = Manager<Settings>;
     using Bitset = typename Settings::Bitset;
-    using Entity = Impl::Entity<Settings>;
-    using HandleData = Impl::HandleData;
+    using Entity = impl::Entity<Settings>;
+    using HandleData = impl::HandleData;
 
 public:
-    using Handle = Impl::Handle;
+    using Handle = impl::Handle;
 
 private:
-    using SignatureBitsetsStorage = Impl::SignatureBitsetsStorage<Settings>;
-    using ComponentStorage = Impl::ComponentStorage<Settings>;
+    using SignatureBitsetsStorage = impl::SignatureBitsetsStorage<Settings>;
+    using ComponentStorage = impl::ComponentStorage<Settings>;
 
     std::size_t capacity{0}, size{0}, sizeNext{0};
     std::vector<Entity> entities;
@@ -740,12 +524,7 @@ private:
 
         using RequiredComponents = typename Settings::SignatureBitsets::template SignatureComponents<T>;
 
-        using Helper = rename_t<ExpandCallHelper, RequiredComponents>;
-
-//        using Helper = MPL::Rename
-// /        <
-// /            ExpandCallHelper, RequiredComponents
-// /        >;
+        using Helper = tools::rename_t<ExpandCallHelper, RequiredComponents>;
 
         Helper::call(mI, *this, mFunction);
     }
@@ -762,7 +541,6 @@ private:
         }
     };
 
-private:
     // We'll need to do something when iterating over dead
     // entities during `refreshImpl()` to make sure their
     // handles get invalidated.

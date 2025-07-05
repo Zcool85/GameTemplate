@@ -10,6 +10,40 @@
 namespace tools {
 
     namespace impl {
+        // Implémentation de for_each_type
+        template<typename TypeList, typename Func>
+        struct for_each_type;
+
+        // Spécialisation pour TypeList vide (cas de base)
+        template<typename Func>
+        struct for_each_type<TypeList<>, Func> {
+            static void apply(Func&& func) {
+                // Rien à faire pour une liste vide
+            }
+        };
+
+        // Spécialisation pour TypeList non-vide (récursion)
+        template<typename Head, typename... Tail, typename Func>
+        struct for_each_type<TypeList<Head, Tail...>, Func> {
+            static void apply(Func&& func) {
+                // Appliquer la fonction au premier type
+                func.template operator()<Head>();
+
+                // Récursion sur le reste de la liste
+                for_each_type<TypeList<Tail...>, Func>::apply(std::forward<Func>(func));
+            }
+        };
+    }
+
+    // Interface publique
+    template<typename TypeList, typename Func>
+    void for_each_type(Func&& func) {
+        impl::for_each_type<TypeList, Func>::apply(std::forward<Func>(func));
+    }
+
+
+
+    namespace impl {
 
         // Helper pour l'itération récursive sur les éléments du tuple
         template<std::size_t I = 0, typename FuncT, typename... Tp>
