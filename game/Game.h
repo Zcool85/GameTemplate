@@ -32,7 +32,7 @@ class Game {
     tools::ConfigurationManager configuration_manager_;
     // TODO : A changer en sf::Window ??
     sf::RenderWindow window_;
-    // TODO : Faire un Id fortement typé pour les identifiants de schène
+    // TODO : Faire un Id fortement typé pour les identifiants de scène
     std::map<uint32_t, std::shared_ptr<Scene>> scenes_;
     bool running_;
     std::shared_ptr<Scene> current_scene_;

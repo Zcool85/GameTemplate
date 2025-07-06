@@ -57,7 +57,7 @@ Game::Game(const std::string &configuration_file_path)
         this->window_.setVerticalSyncEnabled(vertical_sync_enabled);
     } else {
         this->window_.setVerticalSyncEnabled(false);
-        this->window_.setFramerateLimit(framerate_limit);
+        this->window_.setFramerateLimit(static_cast<unsigned int>(framerate_limit));
     }
 
     //this->window_.setKeyRepeatEnabled(false);
@@ -77,7 +77,7 @@ Game::Game(const std::string &configuration_file_path)
     std::cout << "Carte graphique: " << renderer << std::endl;
 
     // Vérifier si on a bien obtenu la version demandée
-    sf::ContextSettings actualSettings = this->window_.getSettings();
+    const sf::ContextSettings actualSettings = this->window_.getSettings();
     std::cout << "Version OpenGL obtenue: "
             << actualSettings.majorVersion << "."
             << actualSettings.minorVersion << std::endl;

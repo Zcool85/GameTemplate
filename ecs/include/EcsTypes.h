@@ -5,9 +5,9 @@
 #ifndef ECS_TYPES_H
 #define ECS_TYPES_H
 
-#include "StrongTypedefTags.h"
-#include "tools/strong_typedef.h"
-#include "tools/type_sequence.h"
+#include "impl/Tags.h"
+#include "tools/StrongTypedef.h"
+#include "tools/TypeList.h"
 
 namespace ecs {
 

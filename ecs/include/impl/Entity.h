@@ -2,10 +2,10 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef ENTITY_H
-#define ENTITY_H
+#ifndef ECS_IMPL_ENTITY_H
+#define ECS_IMPL_ENTITY_H
 
-#include "EcsTypes.h"
+#include "../EcsTypes.h"
 
 namespace ecs::impl {
 
@@ -46,4 +46,4 @@ namespace ecs::impl {
 
 }
 
-#endif //ENTITY_H
+#endif //ECS_IMPL_ENTITY_H

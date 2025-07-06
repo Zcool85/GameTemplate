@@ -2,10 +2,12 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef SIGNATUREBITSETS_H
-#define SIGNATUREBITSETS_H
+#ifndef ECS_IMPL_SIGNATURE_BITSETS_H
+#define ECS_IMPL_SIGNATURE_BITSETS_H
 
-#include "tools/type_sequence.h"
+#include <tuple>
+
+#include "../tools/TypeList.h"
 
 namespace ecs::impl {
 
@@ -77,4 +79,4 @@ namespace ecs::impl {
 
 }
 
-#endif //SIGNATUREBITSETS_H
+#endif //ECS_IMPL_SIGNATURE_BITSETS_H

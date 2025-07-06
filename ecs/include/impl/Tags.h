@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef STRONG_TYPEDEF_TAGS_H
-#define STRONG_TYPEDEF_TAGS_H
+#ifndef ECS_IMPL_TAGS_H
+#define ECS_IMPL_TAGS_H
 
 namespace ecs::impl {
     struct DataIndexTag;
@@ -12,4 +12,4 @@ namespace ecs::impl {
     struct CounterTag;
 }
 
-#endif //STRONG_TYPEDEF_TAGS_H
+#endif //ECS_IMPL_TAGS_H

@@ -2,14 +2,14 @@
 // Created by Zéro Cool on 29/06/2025.
 //
 
-#ifndef FOR_TUPLE_H
-#define FOR_TUPLE_H
+#ifndef ECS_TOOLS_FOR_EACH_TYPE_H
+#define ECS_TOOLS_FOR_EACH_TYPE_H
 
 #include <tuple>
 
-#include "type_sequence.h"
+#include "TypeList.h"
 
-namespace tools {
+namespace ecs::tools {
 
     namespace impl {
         // Implémentation de for_each_type
@@ -19,7 +19,7 @@ namespace tools {
         // Spécialisation pour TypeList vide (cas de base)
         template<typename Func>
         struct for_each_type<TypeList<>, Func> {
-            static void apply(Func&& func) {
+            static void apply([[maybe_unused]] Func&& func) {
                 // Rien à faire pour une liste vide
             }
         };
@@ -50,7 +50,7 @@ namespace tools {
         // Helper pour l'itération récursive sur les éléments du tuple
         template<std::size_t I = 0, typename FuncT, typename... Tp>
         std::enable_if_t<I == sizeof...(Tp), void>
-        for_each_type_impl(std::tuple<Tp...>& t, FuncT&& f) {
+        for_each_type_impl([[maybe_unused]] std::tuple<Tp...>& t, [[maybe_unused]] FuncT&& f) {
             // Cas de base : arrêt de la récursion
         }
 
@@ -73,4 +73,4 @@ namespace tools {
 
 }
 
-#endif //FOR_TUPLE_H
+#endif //ECS_TOOLS_FOR_EACH_TYPE_H

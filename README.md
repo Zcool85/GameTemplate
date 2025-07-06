@@ -43,7 +43,7 @@ include_directories(${SFML_DIR}/include)
 link_directories(${SFML_DIR}/lib)
 add_definitions(-DSFML_STATIC)
 
-add_executable(GameTemplate src/main.cpp)
+add_executable(GameTemplate main.cpp)
 
 target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-audio sfml-system sfml-window)
 ```

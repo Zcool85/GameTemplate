@@ -2,15 +2,15 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef COMPONENT_STORAGE_H
-#define COMPONENT_STORAGE_H
+#ifndef ECS_IMPL_COMPONENT_STORAGE_H
+#define ECS_IMPL_COMPONENT_STORAGE_H
 
 #include <tuple>
 #include <vector>
 
-#include "EcsTypes.h"
-#include "tools/for_each_type.h"
-#include "tools/type_sequence.h"
+#include "../EcsTypes.h"
+#include "../tools/ForEachType.h"
+#include "../tools/TypeList.h"
 
 namespace ecs::impl {
 
@@ -58,7 +58,7 @@ namespace ecs::impl {
          * @param new_capacity Nouvelle taille attendue
          */
         auto grow(std::size_t new_capacity) -> void {
-            tools::for_each_type(vectors, [this, new_capacity](auto &v) {
+            tools::for_each_type(vectors, [new_capacity](auto &v) {
                 v.resize(new_capacity);
             });
         }
@@ -84,4 +84,4 @@ namespace ecs::impl {
 
 }
 
-#endif //COMPONENT_STORAGE_H
+#endif //ECS_IMPL_COMPONENT_STORAGE_H

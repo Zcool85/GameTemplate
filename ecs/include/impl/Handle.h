@@ -2,10 +2,10 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef HANDLE_H
-#define HANDLE_H
+#ifndef ECS_IMPL_HANDLE_H
+#define ECS_IMPL_HANDLE_H
 
-#include "EcsTypes.h"
+#include "../EcsTypes.h"
 
 namespace ecs::impl {
 
@@ -18,4 +18,4 @@ namespace ecs::impl {
 
 }
 
-#endif //HANDLE_H
+#endif //ECS_IMPL_HANDLE_H

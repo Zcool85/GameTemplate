@@ -2,16 +2,16 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef MANAGER_H
-#define MANAGER_H
+#ifndef ECS_MANAGER_H
+#define ECS_MANAGER_H
 
 #include <cassert>
 
-#include "ComponentStorage.h"
-#include "Entity.h"
-#include "Handle.h"
-#include "HandleData.h"
-#include "SignatureBitsetsStorage.h"
+#include "impl/ComponentStorage.h"
+#include "impl/Entity.h"
+#include "impl/Handle.h"
+#include "impl/HandleData.h"
+#include "impl/SignatureBitsetsStorage.h"
 
 namespace ecs {
     /**
@@ -421,8 +421,8 @@ namespace ecs {
             static_assert(Settings::template isSignature<TSignature>(), "");
 
             forEntities([this, &mFunction](auto entity_index) {
-                if (matchesSignature<TSignature>(entity_index)) {
-                    expandSignatureCall<TSignature>(entity_index, mFunction);
+                if (this->template matchesSignature<TSignature>(entity_index)) {
+                    this->template expandSignatureCall<TSignature>(entity_index, mFunction);
                 }
             });
         }
@@ -567,4 +567,4 @@ namespace ecs {
     };
 }
 
-#endif //MANAGER_H
+#endif //ECS_MANAGER_H

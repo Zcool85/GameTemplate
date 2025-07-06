@@ -2,14 +2,14 @@
 // Created by Zéro Cool on 30/06/2025.
 //
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef ECS_SETTINGS_H
+#define ECS_SETTINGS_H
 
 #include <bitset>
 
-#include "SignatureBitsets.h"
-#include "SignatureBitsetsStorage.h"
-#include "../tools/type_sequence.h"
+#include "impl/SignatureBitsets.h"
+#include "impl/SignatureBitsetsStorage.h"
+#include "tools/TypeList.h"
 
 namespace ecs {
 
@@ -33,11 +33,11 @@ namespace ecs {
     struct Settings
     {
         // ComponentList = TypeList<C0, C1, C2, ...>
-        using ComponentList = class TComponentList::TypeList;
+        using ComponentList = struct TComponentList::TypeList;
         // TagList = TypeList<T0, T1, T2, ...>
-        using TagList = class TTagList::TypeList;
+        using TagList = struct TTagList::TypeList;
         // SignatureList = TypeList<ecs:Signature<>, ecs:Signature<S0, S1>, ecs:Signature<S0, S3, ...>, ...>
-        using SignatureList = class TSignatureList::TypeList;
+        using SignatureList = struct TSignatureList::TypeList;
         using ThisType = Settings<ComponentList, TagList, SignatureList>;
 
         // SignatureBitsets = SignatureBitsets<
@@ -94,7 +94,7 @@ namespace ecs {
          * Récupère le nombre de composants
          * @return Nombre de composants
          */
-        static constexpr std::size_t componentCount() noexcept
+        static constexpr std::int32_t componentCount() noexcept
         {
             return tools::size<ComponentList>::value;
         }
@@ -103,7 +103,7 @@ namespace ecs {
          * Récupère le nombre de tags
          * @return Nombre de tags
          */
-        static constexpr std::size_t tagCount() noexcept
+        static constexpr std::int32_t tagCount() noexcept
         {
             return tools::size<TagList>::value;
         }
@@ -112,7 +112,7 @@ namespace ecs {
          * Récupère le nombre de signatures
          * @return Nombre signatures
          */
-        static constexpr std::size_t signatureCount() noexcept
+        static constexpr std::int32_t signatureCount() noexcept
         {
             return tools::size<SignatureList>::value;
         }
@@ -124,7 +124,7 @@ namespace ecs {
          * présent dans la liste
          */
         template<typename T>
-        static constexpr int32_t componentID() noexcept
+        static constexpr std::int32_t componentID() noexcept
         {
             return tools::index_of<T, ComponentList>::value;
         }
@@ -136,7 +136,7 @@ namespace ecs {
          * présent dans la liste
          */
         template<typename T>
-        static constexpr int32_t tagID() noexcept
+        static constexpr std::int32_t tagID() noexcept
         {
             return tools::index_of<T, TagList>::value;
         }
@@ -148,7 +148,7 @@ namespace ecs {
          * présent dans la liste
          */
         template<typename T>
-        static constexpr int32_t signatureID() noexcept
+        static constexpr std::int32_t signatureID() noexcept
         {
             return tools::index_of<T, SignatureList>::value;
         }
@@ -161,7 +161,7 @@ namespace ecs {
          * @return Indice du bit dans le Bitset; -1 si non trouvé
          */
         template<typename T>
-        static constexpr int32_t componentBit() noexcept
+        static constexpr std::int32_t componentBit() noexcept
         {
             return componentID<T>();
         }
@@ -172,7 +172,7 @@ namespace ecs {
          * @return Indice du bit dans le Bitset; -1 si non trouvé
          */
         template<typename T>
-        static constexpr int32_t tagBit() noexcept
+        static constexpr std::int32_t tagBit() noexcept
         {
             if constexpr (tagID<T>() < 0) {
                 return -1;
@@ -184,4 +184,4 @@ namespace ecs {
 
 }
 
-#endif //SETTINGS_H
+#endif //ECS_SETTINGS_H

@@ -2,12 +2,12 @@
 // Created by Zéro Cool on 30/06/2025.
 //
 
-#ifndef TYPE_SEQUENCE_H
-#define TYPE_SEQUENCE_H
+#ifndef ECS_TOOLS_TYPES_LIST_H
+#define ECS_TOOLS_TYPES_LIST_H
 
 #include <type_traits>
 
-namespace tools {
+namespace ecs::tools {
 
     // Template permettant de déclarer une liste de type
     // Exemple : using MyListOfTypes = TypeList<Type1, Type2, Type3, ...>;
@@ -186,4 +186,4 @@ namespace tools {
 
 }
 
-#endif //TYPE_SEQUENCE_H
+#endif //ECS_TOOLS_TYPES_LIST_H

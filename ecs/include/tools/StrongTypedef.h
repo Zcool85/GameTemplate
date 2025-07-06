@@ -2,14 +2,13 @@
 // Created by Zéro Cool on 27/06/2025.
 //
 
-#ifndef STRONG_TYPEDEF_H
-#define STRONG_TYPEDEF_H
+#ifndef ECS_TOOLS_STRONG_TYPEDEF_H
+#define ECS_TOOLS_STRONG_TYPEDEF_H
 
 #include <algorithm>
 #include <type_traits>
 
-namespace tools {
-
+namespace ecs::tools {
     template<typename T, typename>
     class strong_typedef {
         T value_;
@@ -51,7 +50,7 @@ namespace tools {
         // TODO : Un jour, on trouvera une solution pour ne plus être en implicite...
         operator std::size_t() const { return static_cast<std::size_t>(value_); };
 
-        strong_typedef &operator=(int i);
+        strong_typedef &operator=(T i);
 
         // Fonction de hash pour pouvoir utiliser la donnée dans une map par exemple
         struct hash {
@@ -112,7 +111,7 @@ namespace tools {
     // strong_typedef<T, Tag>::operator T() const { return value_; }
 
     template<typename T, typename Tag>
-    strong_typedef<T, Tag> & strong_typedef<T, Tag>::operator=(int i) {
+    strong_typedef<T, Tag> &strong_typedef<T, Tag>::operator=(T i) {
         value_ = i;
         return *this;
     }
@@ -124,4 +123,4 @@ namespace tools {
 
 }
 
-#endif //STRONG_TYPEDEF_H
+#endif //ECS_TOOLS_STRONG_TYPEDEF_H

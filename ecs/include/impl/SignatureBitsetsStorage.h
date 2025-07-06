@@ -2,12 +2,12 @@
 // Created by Zéro Cool on 05/07/2025.
 //
 
-#ifndef SIGNATUREBITSETSSTORAGE_H
-#define SIGNATUREBITSETSSTORAGE_H
+#ifndef ECS_IMP_SIGNATURE_BITSETS_STORAGE_H
+#define ECS_IMP_SIGNATURE_BITSETS_STORAGE_H
 
 #include <tuple>
 
-#include "tools/for_each_type.h"
+#include "../tools/ForEachType.h"
 
 namespace ecs::impl {
 
@@ -80,14 +80,14 @@ namespace ecs::impl {
             using SignatureTags = typename SignatureBitsets::template SignatureTags<TSignature>;
 
             //forTypes<SignatureComponents>([this, &b](auto t) {
-            tools::for_each_type<SignatureComponents>([this, &b]<typename U>() {
+            tools::for_each_type<SignatureComponents>([&b]<typename U>() {
                 // NOTE : For Debug... All is OK
                 // std::cout << "   set for component " << typeid(U).name() << " b[" << Settings::template componentBit<U>() << "] = true" << std::endl;
                 b[Settings::template componentBit<U>()] = true;
             });
 
             //forTypes<SignatureTags>([this, &b](auto t) {
-            tools::for_each_type<SignatureTags>([this, &b]<typename U>() {
+            tools::for_each_type<SignatureTags>([&b]<typename U>() {
                 // NOTE : For Debug... All is OK
                 // std::cout << "   set for tag " << typeid(U).name() << " b[" << Settings::template tagBit<U>() << "] = true" << std::endl;
                 b[Settings::template tagBit<U>()] = true;
@@ -116,4 +116,4 @@ namespace ecs::impl {
 
 }
 
-#endif //SIGNATUREBITSETSSTORAGE_H
+#endif //ECS_IMP_SIGNATURE_BITSETS_STORAGE_H
