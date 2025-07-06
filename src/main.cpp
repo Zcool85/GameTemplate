@@ -606,7 +606,10 @@ int main(const int argc, char *argv[]) {
     mgr.addTag<TPlayer>(player);
 
     auto& pos(mgr.addComponent<CPosition>(player).value);
+    auto &transform(mgr.addComponent<CTransform>(player).x);
     pos = 42;
+
+    mgr.addTag<Tag0>(player);
 
     std::cout << "Entity count : " << mgr.getEntityCount() << std::endl;
     std::cout << "Capacity : " << mgr.getCapacity() << std::endl;
@@ -614,12 +617,31 @@ int main(const int argc, char *argv[]) {
     mgr.refresh();
     mgr.printState(std::cout);
 
-    // // TODO : Ne fonctionne pas
-    // mgr.forEntitiesMatching<S1>([](auto entity_index, auto& cTransform, auto& cVelocity) {
-    //     std::cout << "Entity : " << entity_index << std::endl;
-    //     std::cout << "S1 : " << cTransform.x << std::endl;
-    //     std::cout << "S1 : " << cVelocity.value << std::endl;
-    // });
+    assert(mgr.matchesSignature<S0>(player));
+    assert(mgr.matchesSignature<S1>(player)); // CVelocity n'existant pas, S1 match avec tous les autres types existant
+    assert(mgr.matchesSignature<S2>(player));
+    assert(!mgr.matchesSignature<S3>(player));
+
+    mgr.forEntities([&mgr](const ecs::EntityIndex entity_index) {
+        std::cout << "Entity index : " << entity_index << std::endl;
+        std::cout << "  Has CTransform : " << mgr.hasComponent<CTransform>(entity_index) << std::endl;
+        std::cout << "  Has CPosition : " << mgr.hasComponent<CPosition>(entity_index) << std::endl;
+    });
+
+
+    // Rappel :
+    // using S0 = ecs::Signature<>;
+    // using S1 = ecs::Signature<CTransform, CVelocity>;
+    // using S2 = ecs::Signature<CTransform, CPosition, Tag0>;
+    // using S3 = ecs::Signature<CVelocity, Tag0, CPosition, Tag1>;
+
+    // Ici, les paramètres sont les Components dans l'ordre de la signature (sans les tags)
+    mgr.forEntitiesMatching<S2>(
+        [](const ecs::EntityIndex entity_index, const CTransform &cTransform, const CPosition &cPosition) {
+            std::cout << "Entity : " << entity_index << std::endl;
+            std::cout << "S2 : " << cTransform.x << std::endl;
+            std::cout << "S2 : " << cPosition.value << std::endl;
+        });
 
 
     // TODO : Sortir tous les test dans un fichier à part

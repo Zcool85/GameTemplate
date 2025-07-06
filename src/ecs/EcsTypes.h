@@ -20,9 +20,10 @@ namespace ecs {
     template<typename... Ts>
     using SignatureList = tools::TypeList<Ts...>;
 
-
-    using DataIndex = tools::strong_typedef<std::size_t, impl::DataIndexTag>;
     using EntityIndex = tools::strong_typedef<std::size_t, impl::EntityIndexTag>;
+
+    // TODO : Pour moi tous ces autres types sont internal...
+    using DataIndex = tools::strong_typedef<std::size_t, impl::DataIndexTag>;
     using HandleDataIndex = tools::strong_typedef<std::size_t, impl::HandleDataIndexTag>;
     using Counter = tools::strong_typedef<int, impl::CounterTag>;
 

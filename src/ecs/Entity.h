@@ -23,7 +23,7 @@ namespace ecs::impl {
         using Bitset = typename Settings::Bitset;
 
         /**
-         *
+         * Index du component dans le stocakge des components
          */
         DataIndex dataIndex;
 

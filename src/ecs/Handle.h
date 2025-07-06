@@ -11,6 +11,7 @@ namespace ecs::impl {
 
     struct Handle
     {
+        // TODO : Faire en sorte que le contenu ne puisse pas être visible pour le développeur
         HandleDataIndex handleDataIndex;
         Counter counter;
     };

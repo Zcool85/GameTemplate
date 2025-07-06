@@ -9,6 +9,7 @@
 
 namespace ecs::impl {
 
+    // TODO : Pour moi, c'est du internal
     struct HandleData
     {
         EntityIndex entityIndex;

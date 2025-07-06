@@ -172,9 +172,9 @@ namespace ecs {
          *
          * @param capacity Capacité initiale du Manager (Par défaut 100 entités)
          */
-        Manager(std::size_t capacity = 100) { growTo(capacity); }
+        explicit Manager(const std::size_t capacity = 100) { growTo(capacity); }
 
-        // How to check if an handle is valid?
+        // How to check if a handle is valid?
         // Comparing its counter to the corresponding handle data
         // counter is enough.
         auto isHandleValid(const Handle &mX) const noexcept {
@@ -185,7 +185,7 @@ namespace ecs {
         // should also be possible to call using handles.
 
         // Let's create a method that returns an `EntityIndex` from
-        // an handle valid to aid us.
+        // a handle valid to aid us.
 
         auto getEntityIndex(const Handle &mX) const noexcept {
             assert(isHandleValid(mX));
@@ -260,24 +260,25 @@ namespace ecs {
             e.bitset[Settings::template componentBit<T>()] = true;
 
             auto &c(components.template getComponent<T>(e.dataIndex));
+            // TODO : Je ne vois pas comment celà peut fonctionner... Il manque le FWD()
             new(&c) T(FWD(mXs)...);
             return c;
         }
 
         template<typename T, typename... TArgs>
         auto &addComponent(const Handle &mX, TArgs &&... mXs) noexcept {
+            // TODO : Je ne vois pas comment celà peut fonctionner... Il manque le FWD()
             return addComponent<T>(getEntityIndex(mX), FWD(mXs)...);
         }
 
         // `getComponent` will simply return a reference to the
-        // component, after asserting its existance.
+        // component, after asserting its existence.
         template<typename T>
         auto &getComponent(EntityIndex mI) noexcept {
             static_assert(Settings::template isComponent<T>(), "");
             assert(hasComponent<T>(mI));
 
-            return components.
-                    template getComponent<T>(getEntity(mI).dataIndex);
+            return components.template getComponent<T>(getEntity(mI).dataIndex);
         }
 
         template<typename T>
@@ -288,8 +289,7 @@ namespace ecs {
         template<typename T>
         void delComponent(EntityIndex mI) noexcept {
             static_assert(Settings::template isComponent<T>(), "");
-            getEntity(mI).bitset
-                    [Settings::template componentBit<T>()] = false;
+            getEntity(mI).bitset[Settings::template componentBit<T>()] = false;
         }
 
         template<typename T>
@@ -313,7 +313,7 @@ namespace ecs {
         // `createIndex()` can be used.
 
         // Otherwise, we'll need to create a new method that
-        // returns an handle.
+        // returns a handle.
 
         auto createHandle() {
             // Let's start by creating an entity with
@@ -376,54 +376,102 @@ namespace ecs {
             size = sizeNext = refreshImpl();
         }
 
+        /**
+         * Fonction permettant de déterminer si une entité correspond à une signature.
+         *
+         * La fonction applique un et binaire entre le bitset de l'entité et le bitset
+         * de la signature.
+         *
+         * @tparam T Signature à utiliser pour la vérification
+         * @param entity_index Index de l'entité à contrôler
+         * @return True si l'entité colle avec la signature
+         */
         template<typename T>
-        auto matchesSignature(EntityIndex mI) const noexcept {
+        auto matchesSignature(const EntityIndex entity_index) const noexcept {
             static_assert(Settings::template isSignature<T>(), "");
 
-            const auto &entityBitset(getEntity(mI).bitset);
+            const auto &entityBitset(getEntity(entity_index).bitset);
             const auto &signatureBitset(signatureBitsets.template getSignatureBitset<T>());
 
             return (signatureBitset & entityBitset) == signatureBitset;
         }
 
+        /**
+         * Méthode permettant d'appliquer une fonction sur toutes les entités
+         *
+         * @tparam TF Type de la fonction à appliquer (void mFunction(EntityIndex index))
+         * @param mFunction Fonction à appliquer
+         */
         template<typename TF>
         void forEntities(TF &&mFunction) {
-            for (EntityIndex i{0}; i < size; ++i)
-                mFunction(i);
+            for (EntityIndex entity_index{0}; entity_index < size; ++entity_index) {
+                mFunction(entity_index);
+            }
         }
 
-        template<typename T, typename TF>
+        /**
+         * Méthode permettant d'itérer sur toutes les entités correspondant à la signature.
+         *
+         * @tparam TSignature Signature à utiliser pour filtrer les entités
+         * @tparam TF Type de la fonction à invoquer pour chaque entité
+         * @param mFunction Référence de la fonction à invoquer pour chaque entité
+         */
+        template<typename TSignature, typename TF>
         void forEntitiesMatching(TF &&mFunction) {
-            static_assert(Settings::template isSignature<T>(), "");
+            static_assert(Settings::template isSignature<TSignature>(), "");
 
-            forEntities([this, &mFunction](auto i) {
-                if (matchesSignature<T>(i))
-                    expandSignatureCall<T>(i, mFunction);
+            forEntities([this, &mFunction](auto entity_index) {
+                if (matchesSignature<TSignature>(entity_index)) {
+                    expandSignatureCall<TSignature>(entity_index, mFunction);
+                }
             });
         }
 
     private:
-        template<typename... Ts>
+        template<typename... TSignature>
         struct ExpandCallHelper;
 
-        template<typename T, typename TF>
-        void expandSignatureCall(EntityIndex mI, TF &&mFunction) {
-            static_assert(Settings::template isSignature<T>(), "");
+        /**
+         * Permet d'appeler une fonction pour une entité donnée en fonction de la signature attendue.
+         *
+         * @tparam TSignature Signature à utiliser
+         * @tparam TF Type de la fonction à appeler
+         * @param entity_index Index de l'entité sur laquelle faire l'appel
+         * @param mFunction Référence vers la fonction à appeler
+         */
+        template<typename TSignature, typename TF>
+        void expandSignatureCall(const EntityIndex entity_index, TF &&mFunction) {
+            static_assert(Settings::template isSignature<TSignature>(), "");
 
-            using RequiredComponents = typename Settings::SignatureBitsets::template SignatureComponents<T>;
+            // Tous les composants de la signature
+            // ATTENTION : On ne prend pas les Tags !!!
+            // RequiredComponents = TypeList<C0, C1, CXX, ...>
+            using RequiredComponents = typename Settings::SignatureBitsets::template SignatureComponents<TSignature>;
 
+            // Helper = ExpandCallHelper<
             using Helper = tools::rename_t<ExpandCallHelper, RequiredComponents>;
 
-            Helper::call(mI, *this, mFunction);
+            // NOTE : For debug purpose. All is OK
+            // std::cout << "expandSignatureCall entity " << entity_index << std::endl;
+            // std::cout << "   RequiredComponents " << typeid(RequiredComponents).name() << std::endl;
+            // std::cout << "   Helper " << typeid(Helper).name() << std::endl;
+
+            Helper::call(entity_index, *this, mFunction);
         }
 
-        template<typename... Ts>
+        /**
+         * Permet d'appeler la fonction avec les différents paramètres correspondant
+         * aux Components composant la signature attendu (sans les tags)
+         *
+         * @tparam TSignature Signature à utiliser pour les paramètres de la fonction
+         */
+        template<typename... TSignature>
         struct ExpandCallHelper {
             template<typename TF>
-            static void call(EntityIndex mI, ThisType &mMgr, TF &&mFunction) {
-                auto di(mMgr.getEntity(mI).dataIndex);
+            static void call(const EntityIndex entity_index, ThisType &manager, TF &&mFunction) {
+                auto &data_index(manager.getEntity(entity_index).dataIndex);
 
-                mFunction(mI, mMgr.components.template getComponent<Ts>(di)...);
+                mFunction(entity_index, manager.components.template getComponent<TSignature>(data_index)...);
             }
         };
 
@@ -431,7 +479,7 @@ namespace ecs {
         // entities during `refreshImpl()` to make sure their
         // handles get invalidated.
 
-        // Invalidating an handle is as simple as incrementing
+        // Invalidating a handle is as simple as incrementing
         // its counter.
         void invalidateHandle(EntityIndex mX) noexcept {
             auto &hd(handleData[entities[mX].handleDataIndex]);
@@ -513,7 +561,7 @@ namespace ecs {
                 mOSS << (e.alive ? "A" : "D");
             }
 
-            mOSS << "\n\n";
+            mOSS << std::endl << std::endl;
         }
     };
 }
