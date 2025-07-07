@@ -145,7 +145,7 @@ namespace ecs {
             return handleData[index];
         }
 
-        auto getHandleData(const HandleDataIndex index) const noexcept -> const HandleData & {
+        [[nodiscard]] auto getHandleData(const HandleDataIndex index) const noexcept -> const HandleData & {
             assert(handleData.size() > index);
             return handleData[index];
         }
@@ -154,7 +154,7 @@ namespace ecs {
             return getHandleData(getEntity(index).handleDataIndex);
         }
 
-        auto getHandleData(const EntityIndex index) const noexcept -> const HandleData & {
+        [[nodiscard]] auto getHandleData(const EntityIndex index) const noexcept -> const HandleData & {
             return getHandleData(getEntity(index).handleDataIndex);
         }
 
@@ -162,7 +162,7 @@ namespace ecs {
             return getHandleData(handle.handleDataIndex);
         }
 
-        auto getHandleData(const Handle &handle) const noexcept -> const HandleData & {
+        [[nodiscard]] auto getHandleData(const Handle &handle) const noexcept -> const HandleData & {
             return getHandleData(handle.handleDataIndex);
         }
 
@@ -177,7 +177,7 @@ namespace ecs {
         // How to check if a handle is valid?
         // Comparing its counter to the corresponding handle data
         // counter is enough.
-        auto isHandleValid(const Handle &handle) const noexcept -> bool {
+        [[nodiscard]] auto isHandleValid(const Handle &handle) const noexcept -> bool {
             return handle.counter == getHandleData(handle).counter;
         }
 
@@ -187,16 +187,16 @@ namespace ecs {
         // Let's create a method that returns an `EntityIndex` from
         // a handle valid to aid us.
 
-        auto getEntityIndex(const Handle &handle) const noexcept -> EntityIndex {
+        [[nodiscard]] auto getEntityIndex(const Handle &handle) const noexcept -> EntityIndex {
             assert(isHandleValid(handle));
             return getHandleData(handle).entityIndex;
         }
 
-        auto isAlive(const EntityIndex entity_index) const noexcept -> bool {
+        [[nodiscard]] auto isAlive(const EntityIndex entity_index) const noexcept -> bool {
             return getEntity(entity_index).alive;
         }
 
-        auto isAlive(const Handle &handle) const noexcept -> bool {
+        [[nodiscard]] auto isAlive(const Handle &handle) const noexcept -> bool {
             return isAlive(getEntityIndex(handle));
         }
 
@@ -208,93 +208,98 @@ namespace ecs {
             kill(getEntityIndex(handle));
         }
 
-        template<typename T>
-        auto hasTag(const EntityIndex entity_index) const noexcept -> bool {
-            static_assert(Settings::template isTag<T>(), "");
-            return getEntity(entity_index).bitset[Settings::template tagBit<T>()];
+        template<typename TTag>
+        [[nodiscard]] auto hasTag(const EntityIndex entity_index) const noexcept -> bool {
+            static_assert(Settings::template isTag<TTag>(), "TTag must be a Tag");
+            return getEntity(entity_index).bitset[Settings::template tagBit<TTag>()];
         }
 
-        template<typename T>
-        auto hasTag(const Handle &handle) const noexcept -> bool {
-            return hasTag<T>(getEntityIndex(handle));
+        template<typename TTag>
+        [[nodiscard]] auto hasTag(const Handle &handle) const noexcept -> bool {
+            static_assert(Settings::template isTag<TTag>(), "TTag must be a Tag");
+            return hasTag<TTag>(getEntityIndex(handle));
         }
 
-        template<typename T>
+        template<typename TTag>
         auto addTag(const EntityIndex entity_index) noexcept -> void {
-            static_assert(Settings::template isTag<T>(), "");
-            getEntity(entity_index).bitset[Settings::template tagBit<T>()] = true;
+            static_assert(Settings::template isTag<TTag>(), "TTag must be a Tag");
+            getEntity(entity_index).bitset[Settings::template tagBit<TTag>()] = true;
         }
 
-        template<typename T>
+        template<typename TTag>
         auto addTag(const Handle &handle) noexcept -> void {
-            addTag<T>(getEntityIndex(handle));
+            static_assert(Settings::template isTag<TTag>(), "TTag must be a Tag");
+            addTag<TTag>(getEntityIndex(handle));
         }
 
-        template<typename T>
+        template<typename TTag>
         auto delTag(const EntityIndex entity_index) noexcept -> void {
-            static_assert(Settings::template isTag<T>(), "");
-            getEntity(entity_index).bitset[Settings::template tagBit<T>()] = false;
+            static_assert(Settings::template isTag<TTag>(), "TTag must be a Tag");
+            getEntity(entity_index).bitset[Settings::template tagBit<TTag>()] = false;
         }
 
-        template<typename T>
+        template<typename TTag>
         auto delTag(const Handle &handle) noexcept -> void {
-            return delTag<T>(getEntityIndex(handle));
+            static_assert(Settings::template isTag<TTag>(), "TTag must be a Tag");
+            return delTag<TTag>(getEntityIndex(handle));
         }
 
-        template<typename T>
-        auto hasComponent(const EntityIndex entity_index) const noexcept -> bool {
-            static_assert(Settings::template isComponent<T>(), "");
-            return getEntity(entity_index).bitset[Settings::template componentBit<T>()];
+        template<typename TComponent>
+        [[nodiscard]] auto hasComponent(const EntityIndex entity_index) const noexcept -> bool {
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            return getEntity(entity_index).bitset[Settings::template componentBit<TComponent>()];
         }
 
-        template<typename T>
-        auto hasComponent(const Handle &handle) const noexcept -> bool {
-            return hasComponent<T>(getEntityIndex(handle));
+        template<typename TComponent>
+        [[nodiscard]] auto hasComponent(const Handle &handle) const noexcept -> bool {
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            return hasComponent<TComponent>(getEntityIndex(handle));
         }
 
-        template<typename T, typename... TArgs>
-        auto addComponent(const EntityIndex entity_index, TArgs &&... mXs) noexcept -> T & {
-            static_assert(Settings::template isComponent<T>(), "");
+        template<typename TComponent, typename... TArgs>
+        auto addComponent(const EntityIndex entity_index, TArgs &&... mXs) noexcept -> TComponent & {
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
 
             auto &e(getEntity(entity_index));
-            e.bitset[Settings::template componentBit<T>()] = true;
+            e.bitset[Settings::template componentBit<TComponent>()] = true;
 
-            auto &c(components.template getComponent<T>(e.dataIndex));
-            // TODO : Je ne vois pas comment celà peut fonctionner... Il manque le FWD()
-            new(&c) T(FWD(mXs)...);
+            auto &c(components.template getComponent<TComponent>(e.dataIndex));
+            new(&c) TComponent(std::forward<TArgs>(mXs)...);
             return c;
         }
 
-        template<typename T, typename... TArgs>
-        auto addComponent(const Handle &handle, TArgs &&... mXs) noexcept -> T & {
-            // TODO : Je ne vois pas comment celà peut fonctionner... Il manque le FWD()
-            return addComponent<T>(getEntityIndex(handle), FWD(mXs)...);
+        template<typename TComponent, typename... TArgs>
+        auto addComponent(const Handle &handle, TArgs &&... mXs) noexcept -> TComponent & {
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            return addComponent<TComponent>(getEntityIndex(handle), std::forward<TArgs>(mXs)...);
         }
 
         // `getComponent` will simply return a reference to the
         // component, after asserting its existence.
-        template<typename T>
-        auto getComponent(const EntityIndex entity_index) noexcept -> T & {
-            static_assert(Settings::template isComponent<T>(), "");
-            assert(hasComponent<T>(entity_index));
+        template<typename TComponent>
+        auto getComponent(const EntityIndex entity_index) noexcept -> TComponent & {
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            assert(hasComponent<TComponent>(entity_index));
 
-            return components.template getComponent<T>(getEntity(entity_index).dataIndex);
+            return components.template getComponent<TComponent>(getEntity(entity_index).dataIndex);
         }
 
-        template<typename T>
-        auto getComponent(const Handle &handle) noexcept -> T & {
-            return getComponent<T>(getEntityIndex(handle));
+        template<typename TComponent>
+        auto getComponent(const Handle &handle) noexcept -> TComponent & {
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            return getComponent<TComponent>(getEntityIndex(handle));
         }
 
-        template<typename T>
+        template<typename TComponent>
         auto delComponent(const EntityIndex entity_index) noexcept -> void {
-            static_assert(Settings::template isComponent<T>(), "");
-            getEntity(entity_index).bitset[Settings::template componentBit<T>()] = false;
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            getEntity(entity_index).bitset[Settings::template componentBit<TComponent>()] = false;
         }
 
-        template<typename T>
+        template<typename TComponent>
         auto delComponent(const Handle &handle) noexcept -> void {
-            delComponent<T>(getEntityIndex(handle));
+            static_assert(Settings::template isComponent<TComponent>(), "TComponent must be a Component");
+            delComponent<TComponent>(getEntityIndex(handle));
         }
 
         auto createIndex() -> EntityIndex {
@@ -302,9 +307,9 @@ namespace ecs {
             EntityIndex freeIndex(sizeNext++);
 
             assert(!isAlive(freeIndex));
-            auto &e(entities[freeIndex]);
-            e.alive = true;
-            e.bitset.reset();
+            auto &entity(entities[freeIndex]);
+            entity.alive = true;
+            entity.bitset.reset();
 
             return freeIndex;
         }
@@ -323,8 +328,8 @@ namespace ecs {
 
             // We'll need to "match" the new entity
             // and the new handle together.
-            auto &e(entities[freeIndex]);
-            auto &hd(handleData[e.handleDataIndex]);
+            auto &entity(entities[freeIndex]);
+            auto &hd(handleData[entity.handleDataIndex]);
 
             // Let's update the entity's corresponding
             // handle data to point to the new index.
@@ -335,7 +340,7 @@ namespace ecs {
 
             // The handle will point to the entity's
             // handle data...
-            h.handleDataIndex = e.handleDataIndex;
+            h.handleDataIndex = entity.handleDataIndex;
 
             // ...and its validity counter will be set
             // to the handle data's current counter.
@@ -352,16 +357,16 @@ namespace ecs {
             // Let's re-initialize handles during `clear()`.
 
             for (auto i(0u); i < capacity; ++i) {
-                auto &e(entities[i]);
-                auto &hd(handleData[i]);
+                auto &entity(entities[i]);
+                auto &[entity_index, counter](handleData[i]);
 
-                e.dataIndex = i;
-                e.bitset.reset();
-                e.alive = false;
-                e.handleDataIndex = i;
+                entity.dataIndex = i;
+                entity.bitset.reset();
+                entity.alive = false;
+                entity.handleDataIndex = i;
 
-                hd.counter = 0;
-                hd.entityIndex = i;
+                counter = 0;
+                entity_index = i;
             }
 
             size = sizeNext = 0;
@@ -382,16 +387,16 @@ namespace ecs {
          * La fonction applique un et binaire entre le bitset de l'entité et le bitset
          * de la signature.
          *
-         * @tparam T Signature à utiliser pour la vérification
+         * @tparam TSignature Signature à utiliser pour la vérification
          * @param entity_index Index de l'entité à contrôler
          * @return True si l'entité colle avec la signature
          */
-        template<typename T>
-        auto matchesSignature(const EntityIndex entity_index) const noexcept -> bool {
-            static_assert(Settings::template isSignature<T>(), "");
+        template<typename TSignature>
+        [[nodiscard]] auto matchesSignature(const EntityIndex entity_index) const noexcept -> bool {
+            static_assert(Settings::template isSignature<TSignature>(), "TSignature must be a Signature");
 
             const auto &entityBitset(getEntity(entity_index).bitset);
-            const auto &signatureBitset(signatureBitsets.template getSignatureBitset<T>());
+            const auto &signatureBitset(signatureBitsets.template getSignatureBitset<TSignature>());
 
             return (signatureBitset & entityBitset) == signatureBitset;
         }
@@ -418,7 +423,7 @@ namespace ecs {
          */
         template<typename TSignature, typename TF>
         auto forEntitiesMatching(TF &&mFunction) -> void {
-            static_assert(Settings::template isSignature<TSignature>(), "");
+            static_assert(Settings::template isSignature<TSignature>(), "TSignature must be a Signature");
 
             forEntities([this, &mFunction](auto entity_index) {
                 if (this->template matchesSignature<TSignature>(entity_index)) {
@@ -441,7 +446,7 @@ namespace ecs {
          */
         template<typename TSignature, typename TF>
         auto expandSignatureCall(const EntityIndex entity_index, TF &&mFunction) -> void {
-            static_assert(Settings::template isSignature<TSignature>(), "");
+            static_assert(Settings::template isSignature<TSignature>(), "TSignature must be a Signature");
 
             // Tous les composants de la signature
             // ATTENTION : On ne prend pas les Tags !!!
@@ -542,11 +547,11 @@ namespace ecs {
         }
 
     public:
-        auto getEntityCount() const noexcept -> std::size_t {
+        [[nodiscard]] auto getEntityCount() const noexcept -> std::size_t {
             return size;
         }
 
-        auto getCapacity() const noexcept -> std::size_t {
+        [[nodiscard]] auto getCapacity() const noexcept -> std::size_t {
             return capacity;
         }
 

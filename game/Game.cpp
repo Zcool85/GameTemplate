@@ -67,8 +67,8 @@ Game::Game(const std::string &configuration_file_path)
         std::cerr << "OpenGL context activation failed" << std::endl;
     }
 
-    this->scenes_["MAIN_MENU"_hash] = std::make_shared<MainMenuScene>(*this);
-    this->current_scene_ = this->scenes_["MAIN_MENU"_hash];
+    this->scenes_["MAIN_MENU"_scene] = std::make_shared<MainMenuScene>(*this);
+    this->current_scene_ = this->scenes_["MAIN_MENU"_scene];
 
     // Vérifier la version OpenGL obtenue
     const GLubyte *version = glGetString(GL_VERSION);
@@ -90,8 +90,8 @@ auto Game::run() -> void {
     }
 
     // Init First Scene
-    scenes_["MAIN_MENU"_hash] = std::make_shared<MainMenuScene>(*this);
-    current_scene_ = this->scenes_["MAIN_MENU"_hash];
+    scenes_["MAIN_MENU"_scene] = std::make_shared<MainMenuScene>(*this);
+    current_scene_ = this->scenes_["MAIN_MENU"_scene];
 
     running_ = true;
     // ReSharper disable once CppDFAConstantConditions

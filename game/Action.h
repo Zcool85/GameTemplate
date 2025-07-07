@@ -8,8 +8,8 @@
 #include "Types.h"
 
 struct Action {
-    ActionNameId name;
-    ActionTypeId type;
+    ActionNameId name{};
+    ActionTypeId type{};
 };
 
 #endif //ACTION_H

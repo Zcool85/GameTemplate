@@ -12,6 +12,8 @@
 
 struct CTransform {
     int x;
+    CTransform() : x(0) { }
+    explicit CTransform(const int value) : x(value) { }
 };
 
 struct CVelocity {
@@ -456,9 +458,17 @@ int main() {
     mgr.addTag<TPlayer>(player);
 
     auto& pos(mgr.addComponent<CPosition>(player).value);
-    auto &transform(mgr.addComponent<CTransform>(player).x);
+    auto &transform(mgr.addComponent<CTransform>(player, 56).x);
+
+    std::cout << "initial pos = " << pos << std::endl;
+    std::cout << "initial transform = " << transform << std::endl;
+
     pos = 42;
     transform = 42;
+
+    std::cout << "pos after set = " << pos << std::endl;
+    std::cout << "transform after set = " << transform << std::endl;
+
 
     mgr.addTag<Tag0>(player);
 

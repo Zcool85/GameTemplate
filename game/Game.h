@@ -9,6 +9,7 @@
 
 #include "scenes/Scene.h"
 #include "tools/ConfigurationManager.h"
+#include "Types.h"
 
 class Scene;
 
@@ -30,10 +31,10 @@ class Scene;
 /// de chaque classe Scene.
 class Game {
     tools::ConfigurationManager configuration_manager_;
-    // TODO : A changer en sf::Window ??
+    // Pour le moment on se limite à un plan 2D. Donc notre fenêtre sera un sf::RenderWindow et non un sf::Window
     sf::RenderWindow window_;
     // TODO : Faire un Id fortement typé pour les identifiants de scène
-    std::map<uint32_t, std::shared_ptr<Scene>> scenes_;
+    std::map<SceneId, std::shared_ptr<Scene> > scenes_;
     bool running_;
     std::shared_ptr<Scene> current_scene_;
     sf::Clock delta_clock_;
