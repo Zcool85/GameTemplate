@@ -20,7 +20,7 @@
 class MainMenuScene final
         : public Scene {
 public:
-    explicit MainMenuScene(const Game &game);
+    explicit MainMenuScene(Game &game);
 
     auto update(const sf::Time& delta_time) -> void override;
 

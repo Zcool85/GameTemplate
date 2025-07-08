@@ -11,7 +11,14 @@ add_library(GameLib STATIC
         scenes/MainMenuScene.h
         Types.h
         Action.h
+        tools/FontSettings.h
+        tools/PlayerSettings.h
+        tools/EnemySettings.h
+        tools/BulletSettings.h
 )
+
+# ECS Framework
+target_include_directories(GameLib PRIVATE ../ecs/include)
 
 target_link_libraries(GameLib PRIVATE
         SFML::Graphics

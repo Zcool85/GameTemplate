@@ -4,8 +4,8 @@
 
 #include "Scene.h"
 
-Scene::Scene(const Game& game)
-: game_(game), frame_(0), paused_(false) {
+Scene::Scene(Game &game)
+    : game_(game), frame_(0), paused_(false) {
 }
 
 auto Scene::registerAction(const sf::Keyboard::Key inputKey, const ActionNameId action) -> void {

@@ -81,6 +81,8 @@ Game::Game(const std::string &configuration_file_path)
     std::cout << "Version OpenGL obtenue: "
             << actualSettings.majorVersion << "."
             << actualSettings.minorVersion << std::endl;
+
+    spawnPlayer();
 }
 
 auto Game::run() -> void {
@@ -109,6 +111,39 @@ auto Game::run() -> void {
 
 auto Game::window() -> sf::RenderWindow & {
     return this->window_;
+}
+
+auto Game::spawnPlayer() -> void {
+    auto &player_settings = configuration_manager_.getPlayerSettings();
+    player_entity_index_ = entity_manager_.createIndex();
+
+    entity_manager_.addTag<TPlayer>(player_entity_index_);
+
+    auto &transform(entity_manager_.addComponent<CTransform>(player_entity_index_));
+    auto &collision(entity_manager_.addComponent<CCollision>(player_entity_index_));
+    auto &shape(entity_manager_.addComponent<CShape>(player_entity_index_));
+    entity_manager_.addComponent<CInput>(player_entity_index_);
+
+    transform.position = {window_.getSize().x / 2.f, window_.getSize().y / 2.f}; // NOLINT(*-narrowing-conversions)
+    transform.scale = {1.f, 1.f};
+    transform.velocity = {player_settings.speed, player_settings.speed};
+
+    collision.radius = player_settings.collision_radius;
+
+    shape.circle = sf::CircleShape(player_settings.shape_radius);
+    shape.circle.setOrigin({player_settings.shape_radius, player_settings.shape_radius});
+    shape.circle.setFillColor({
+        static_cast<std::uint8_t>(player_settings.fill_color_r),
+        static_cast<std::uint8_t>(player_settings.fill_color_g),
+        static_cast<std::uint8_t>(player_settings.fill_color_b)
+    });
+    shape.circle.setOutlineColor({
+        static_cast<std::uint8_t>(player_settings.outline_color_r),
+        static_cast<std::uint8_t>(player_settings.outline_color_g),
+        static_cast<std::uint8_t>(player_settings.outline_color_b)
+    });
+    shape.circle.setOutlineThickness(player_settings.outline_thickness);
+    shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
 }
 
 auto Game::processInput() -> void {
@@ -146,6 +181,14 @@ auto Game::update() -> void {
         scene->update(delta_clock);
     }
 
+    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
+    auto &[circle](entity_manager_.getComponent<CShape>(player_entity_index_));
+
+    transform.angle += 60.f * delta_clock.asSeconds();
+
+    circle.setPosition(transform.position);
+    circle.setScale(transform.scale);
+    circle.setRotation(sf::degrees(transform.angle));
 
     ImGui::Begin("Window title");
     ImGui::Text("Window Text rendered in %f sec!", this->delta_clock_.getElapsedTime().asSeconds());
@@ -163,6 +206,9 @@ auto Game::render() -> void {
     for (const auto &scene: this->scenes_ | std::views::values) {
         scene->render();
     }
+
+    auto &[circle](entity_manager_.getComponent<CShape>(player_entity_index_));
+    this->window_.draw(circle);
 
     ImGui::SFML::Render(this->window_);
 

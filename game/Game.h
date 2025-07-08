@@ -10,8 +10,83 @@
 #include "scenes/Scene.h"
 #include "tools/ConfigurationManager.h"
 #include "Types.h"
+#include "Ecs.h"
 
 class Scene;
+
+
+struct CTransform {
+    sf::Vector2f position;
+    sf::Vector2f velocity;
+    sf::Vector2f scale;
+    float angle{};
+};
+
+struct CCollision {
+    float radius;
+};
+
+struct CScore {
+    int score;
+};
+
+struct CShape {
+    sf::CircleShape circle;
+};
+
+struct CLifespan {
+    int lifespan;
+    int remaining;
+};
+
+struct CInput {
+    int up;
+    int down;
+    int left;
+    int right;
+    int shoot;
+};
+
+using GameComponentsList = ecs::ComponentList<
+    CTransform,
+    CCollision,
+    CScore,
+    CShape,
+    CLifespan,
+    CInput
+>;
+
+struct TPlayer {
+};
+
+struct TBullet {
+};
+
+struct TEnemy {
+};
+
+struct TSmallEnemy {
+};
+
+struct TSpawning {
+};
+
+using MyTagList = ecs::TagList<
+    TPlayer,
+    TBullet,
+    TEnemy,
+    TSmallEnemy,
+    TSpawning
+>;
+
+using SPlayers = ecs::Signature<TPlayer, CTransform, CCollision, CShape, CInput>;
+using SBullets = ecs::Signature<TBullet, CTransform, CCollision, CShape, CLifespan>;
+using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
+using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CCollision, CShape, CLifespan, CScore>;
+
+using MySignatureList = ecs::SignatureList<SPlayers, SBullets, SEnemies, SSmallEnemies>;
+
+using MySettings = ecs::Settings<GameComponentsList, MyTagList, MySignatureList>;
 
 /// @brief Classe principale du jeu
 ///
@@ -30,14 +105,17 @@ class Scene;
 /// L'instance de cette classe est passée en paramètre du constructeur
 /// de chaque classe Scene.
 class Game {
+    using EntityManager = ecs::Manager<MySettings>;
+
     tools::ConfigurationManager configuration_manager_;
     // Pour le moment on se limite à un plan 2D. Donc notre fenêtre sera un sf::RenderWindow et non un sf::Window
     sf::RenderWindow window_;
-    // TODO : Faire un Id fortement typé pour les identifiants de scène
     std::map<SceneId, std::shared_ptr<Scene> > scenes_;
     bool running_;
     std::shared_ptr<Scene> current_scene_;
     sf::Clock delta_clock_;
+    EntityManager entity_manager_;
+    ecs::EntityIndex player_entity_index_{};
 
     /// @brief Traite les inputs (clavier, souris, joystick...)
     auto processInput() -> void;
@@ -57,6 +135,8 @@ public:
     auto run() -> void;
 
     auto window() -> sf::RenderWindow &;
+
+    auto spawnPlayer() -> void;
 
     //auto changeScene<T>() -> void;
     //auto getAssets() -> Assets &;

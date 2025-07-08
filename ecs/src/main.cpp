@@ -454,7 +454,7 @@ int main() {
 
     EntityManager mgr;
 
-    auto player(mgr.createIndex());
+    const auto player(mgr.createIndex());
     mgr.addTag<TPlayer>(player);
 
     auto& pos(mgr.addComponent<CPosition>(player).value);

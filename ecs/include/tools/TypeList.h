@@ -16,10 +16,28 @@ namespace ecs::tools {
     {
     };
 
+
+    // /////////////////////////////////////////////////////////////////////////////////
+    // /
+    // / Cette section fournie ce qu'il faut pour valider qu'un template est un TypeList
+    // /
+    template<typename T>
+    struct is_type_list : std::false_type {};
+
+    template<typename... Elements>
+    struct is_type_list<TypeList<Elements...>> : std::true_type {};
+
+    template<typename T>
+    constexpr bool is_type_list_v = is_type_list<T>::value;
+
+    template<typename T>
+    concept ValidTypeList = tools::is_type_list_v<T>;
+
+
     // /////////////////////////////////////////////////////////////////////////////////
     // /
     // / Cette section permet de vérifier qu'un type est présent dans un type_sequence
-    // / Testé OK
+    // /
     template<typename T, typename Ts>
     struct contains;
 

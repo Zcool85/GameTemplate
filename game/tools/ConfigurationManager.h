@@ -8,7 +8,11 @@
 #include <iostream>
 #include <libconfig.h++>
 
+#include "BulletSettings.h"
+#include "EnemySettings.h"
+#include "FontSettings.h"
 #include "GraphicsSettings.h"
+#include "PlayerSettings.h"
 #include "WindowSettings.h"
 
 namespace tools {
@@ -17,6 +21,10 @@ namespace tools {
         libconfig::Config configuration_;
         WindowSettings window_settings_;
         GraphicsSettings graphics_settings_;
+        FontSettings font_settings_;
+        PlayerSettings player_settings_;
+        EnemySettings enemy_settings_;
+        BulletSettings bullet_settings_;
 
         static auto getOrCreateGroup(libconfig::Setting &root, const std::string &key) -> libconfig::Setting &;
 
@@ -33,6 +41,14 @@ namespace tools {
         auto getWindowSettings() -> WindowSettings &;
 
         auto getGraphicsSettings() -> GraphicsSettings &;
+
+        auto getFontSettings() -> FontSettings &;
+
+        auto getPlayerSettings() -> PlayerSettings &;
+
+        auto getEnemySettings() -> EnemySettings &;
+
+        auto getBulletSettings() -> BulletSettings &;
 
         [[nodiscard]] auto Save() const -> bool;
     };

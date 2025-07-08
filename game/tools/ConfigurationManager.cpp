@@ -40,6 +40,54 @@ namespace tools {
         configuration_.lookupValue("graphics.attribute_flags", graphics_settings_.attribute_flags);
         configuration_.lookupValue("graphics.framerate_limit", graphics_settings_.framerate_limit);
         configuration_.lookupValue("graphics.vertical_sync_enabled", graphics_settings_.vertical_sync_enabled);
+
+        // TODO : Code saving values
+        configuration_.lookupValue("font.file", font_settings_.file);
+        configuration_.lookupValue("font.size", font_settings_.size);
+        configuration_.lookupValue("font.color.r", font_settings_.color_r);
+        configuration_.lookupValue("font.color.g", font_settings_.color_g);
+        configuration_.lookupValue("font.color.b", font_settings_.color_b);
+
+        // TODO : Code saving values
+        configuration_.lookupValue("player.shape_radius", player_settings_.shape_radius);
+        configuration_.lookupValue("player.collision_radius", player_settings_.collision_radius);
+        configuration_.lookupValue("player.speed", player_settings_.speed);
+        configuration_.lookupValue("player.fill_color.r", player_settings_.fill_color_r);
+        configuration_.lookupValue("player.fill_color.g", player_settings_.fill_color_g);
+        configuration_.lookupValue("player.fill_color.b", player_settings_.fill_color_b);
+        configuration_.lookupValue("player.outline_color.r", player_settings_.outline_color_r);
+        configuration_.lookupValue("player.outline_color.g", player_settings_.outline_color_g);
+        configuration_.lookupValue("player.outline_color.b", player_settings_.outline_color_b);
+        configuration_.lookupValue("player.outline_thickness", player_settings_.outline_thickness);
+        configuration_.lookupValue("player.shape_vertices", player_settings_.shape_vertices);
+
+        // TODO : Code saving values
+        configuration_.lookupValue("enemy.shape_radius", enemy_settings_.shape_radius);
+        configuration_.lookupValue("enemy.collision_radius", enemy_settings_.collision_radius);
+        configuration_.lookupValue("enemy.min_speed", enemy_settings_.min_speed);
+        configuration_.lookupValue("enemy.max_speed", enemy_settings_.max_speed);
+        configuration_.lookupValue("enemy.outline_color.r", enemy_settings_.outline_color_r);
+        configuration_.lookupValue("enemy.outline_color.g", enemy_settings_.outline_color_g);
+        configuration_.lookupValue("enemy.outline_color.b", enemy_settings_.outline_color_b);
+        configuration_.lookupValue("enemy.outline_thickness", enemy_settings_.outline_thickness);
+        configuration_.lookupValue("enemy.min_vertices", enemy_settings_.min_vertices);
+        configuration_.lookupValue("enemy.max_vertices", enemy_settings_.max_vertices);
+        configuration_.lookupValue("enemy.small_lifespan", enemy_settings_.small_lifespan);
+        configuration_.lookupValue("enemy.spawn_interval", enemy_settings_.spawn_interval);
+
+        // TODO : Code saving values
+        configuration_.lookupValue("bullet.shape_radius", bullet_settings_.shape_radius);
+        configuration_.lookupValue("bullet.collision_radius", bullet_settings_.collision_radius);
+        configuration_.lookupValue("bullet.speed", bullet_settings_.speed);
+        configuration_.lookupValue("bullet.fill_color.r", bullet_settings_.fill_color_r);
+        configuration_.lookupValue("bullet.fill_color.g", bullet_settings_.fill_color_g);
+        configuration_.lookupValue("bullet.fill_color.b", bullet_settings_.fill_color_b);
+        configuration_.lookupValue("bullet.outline_color.r", bullet_settings_.outline_color_r);
+        configuration_.lookupValue("bullet.outline_color.g", bullet_settings_.outline_color_g);
+        configuration_.lookupValue("bullet.outline_color.b", bullet_settings_.outline_color_b);
+        configuration_.lookupValue("bullet.outline_thickness", bullet_settings_.outline_thickness);
+        configuration_.lookupValue("bullet.shape_vertices", bullet_settings_.shape_vertices);
+        configuration_.lookupValue("bullet.lifespan", bullet_settings_.lifespan);
     }
 
     auto ConfigurationManager::getWindowSettings() -> WindowSettings & {
@@ -48,6 +96,22 @@ namespace tools {
 
     auto ConfigurationManager::getGraphicsSettings() -> GraphicsSettings & {
         return graphics_settings_;
+    }
+
+    auto ConfigurationManager::getFontSettings() -> FontSettings & {
+        return font_settings_;
+    }
+
+    auto ConfigurationManager::getPlayerSettings() -> PlayerSettings & {
+        return player_settings_;
+    }
+
+    auto ConfigurationManager::getEnemySettings() -> EnemySettings & {
+        return enemy_settings_;
+    }
+
+    auto ConfigurationManager::getBulletSettings() -> BulletSettings & {
+        return bullet_settings_;
     }
 
     auto ConfigurationManager::Save() const -> bool {

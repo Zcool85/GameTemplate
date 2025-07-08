@@ -20,20 +20,20 @@ namespace ecs {
      * Les settings contiennent la déclaration de tous les components, tous
      * les tags et toutes les signatures utilisées pour les filtres.
      *
-     * @tparam TComponentList Liste des composants
+     * @tparam TComponents Liste des composants
      * @tparam TTagList Liste des tags
      * @tparam TSignatureList Liste des signatures (ecs::Signature<C0, C1, C2, ...>)
      */
     template
     <
-        typename TComponentList,
-        typename TTagList,
-        typename TSignatureList
+        tools::ValidTypeList TComponents,
+        tools::ValidTypeList TTagList,
+        tools::ValidTypeList TSignatureList
     >
     struct Settings
     {
         // ComponentList = TypeList<C0, C1, C2, ...>
-        using ComponentList = struct TComponentList::TypeList;
+        using ComponentList = struct TComponents::TypeList;
         // TagList = TypeList<T0, T1, T2, ...>
         using TagList = struct TTagList::TypeList;
         // SignatureList = TypeList<ecs:Signature<>, ecs:Signature<S0, S1>, ecs:Signature<S0, S3, ...>, ...>
@@ -59,35 +59,35 @@ namespace ecs {
 
         /**
          * Vérifie si un type donné est présent dans la liste des composants
-         * @tparam T Type à contrôler
+         * @tparam TComponent Type à contrôler
          * @return true si le type donné est bien présent dans la liste des composants
          */
-        template<typename T>
+        template<typename TComponent>
         static constexpr bool isComponent() noexcept
         {
-            return tools::contains_v<T, ComponentList>;
+            return tools::contains_v<TComponent, ComponentList>;
         }
 
         /**
          * Vérifie si un type donné est présent dans la liste des tags
-         * @tparam T Type à contrôler
+         * @tparam TTag Type à contrôler
          * @return true si le type donné est bien présent dans la liste des tags
          */
-        template<typename T>
+        template<typename TTag>
         static constexpr bool isTag() noexcept
         {
-            return tools::contains_v<T, TagList>;
+            return tools::contains_v<TTag, TagList>;
         }
 
         /**
          * Vérifie si un type donné est présent dans la liste des signatures
-         * @tparam T Type à contrôler
+         * @tparam TSignature Type à contrôler
          * @return true si le type donné est bien présent dans la liste des signatures
          */
-        template<typename T>
+        template<typename TSignature>
         static constexpr bool isSignature() noexcept
         {
-            return tools::contains_v<T, SignatureList>;
+            return tools::contains_v<TSignature, SignatureList>;
         }
 
         /**
@@ -119,66 +119,66 @@ namespace ecs {
 
         /**
          * Récupère l'indice du composant dans la liste des composants
-         * @tparam T Type de composant
+         * @tparam TComponent Type de composant
          * @return Identifiant unique du composant dans la liste (son indice); -1 si non
          * présent dans la liste
          */
-        template<typename T>
+        template<typename TComponent>
         static constexpr std::int32_t componentID() noexcept
         {
-            return tools::index_of<T, ComponentList>::value;
+            return tools::index_of<TComponent, ComponentList>::value;
         }
 
         /**
          * Récupère l'indice du tag dans la liste des tags
-         * @tparam T Type de tag
+         * @tparam TTag Type de tag
          * @return Identifiant unique du tag dans la liste (son indice); -1 si non
          * présent dans la liste
          */
-        template<typename T>
+        template<typename TTag>
         static constexpr std::int32_t tagID() noexcept
         {
-            return tools::index_of<T, TagList>::value;
+            return tools::index_of<TTag, TagList>::value;
         }
 
         /**
          * Récupère l'indice de la signature dans la liste des signatures
-         * @tparam T Type de signature
+         * @tparam TSignature Type de signature
          * @return Identifiant unique de la signature dans la liste (son indice); -1 si non
          * présent dans la liste
          */
-        template<typename T>
+        template<typename TSignature>
         static constexpr std::int32_t signatureID() noexcept
         {
-            return tools::index_of<T, SignatureList>::value;
+            return tools::index_of<TSignature, SignatureList>::value;
         }
 
         using Bitset = std::bitset<componentCount() + tagCount()>;
 
         /**
          * Récupère l'indice du bit correspondant au composant dans le Bitset
-         * @tparam T Type de composant
+         * @tparam TComponent Type de composant
          * @return Indice du bit dans le Bitset; -1 si non trouvé
          */
-        template<typename T>
+        template<typename TComponent>
         static constexpr std::int32_t componentBit() noexcept
         {
-            return componentID<T>();
+            return componentID<TComponent>();
         }
 
         /**
          * Récupère l'indice du bit correspondant au tag dans le Bitset
-         * @tparam T Type de tag
+         * @tparam TTag Type de tag
          * @return Indice du bit dans le Bitset; -1 si non trouvé
          */
-        template<typename T>
+        template<typename TTag>
         static constexpr std::int32_t tagBit() noexcept
         {
-            if constexpr (tagID<T>() < 0) {
+            if constexpr (tagID<TTag>() < 0) {
                 return -1;
             }
 
-            return componentCount() + tagID<T>();
+            return componentCount() + tagID<TTag>();
         }
     };
 

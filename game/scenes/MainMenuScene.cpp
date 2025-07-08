@@ -4,8 +4,8 @@
 
 #include "MainMenuScene.h"
 
-MainMenuScene::MainMenuScene(const Game &game)
-        : Scene(game) {
+MainMenuScene::MainMenuScene(Game &game)
+    : Scene(game) {
     // TODO : On peut faire mieux :p
     registerAction(sf::Keyboard::Key::Z, "UP"_action_name);
     registerAction(sf::Keyboard::Key::D, "RIGHT"_action_name);

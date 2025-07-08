@@ -18,7 +18,7 @@ class Game;
 /// - Actions
 class Scene {
 protected:
-    const Game &game_;
+    Game &game_;
     // Map sf::Keyboard key to ActionNameId to perform
     std::map<sf::Keyboard::Key, ActionNameId> action_map_;
     int frame_;
@@ -27,7 +27,7 @@ protected:
     auto registerAction(sf::Keyboard::Key inputKey, ActionNameId action) -> void;
 
 public:
-    explicit Scene(const Game &game);
+    explicit Scene(Game &game);
 
     virtual ~Scene() = default;
 
