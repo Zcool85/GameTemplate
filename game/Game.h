@@ -35,16 +35,17 @@ struct CShape {
 };
 
 struct CLifespan {
-    int lifespan;
-    int remaining;
+    int lifespan{};
+    int remaining{};
 };
 
 struct CInput {
-    int up;
-    int down;
-    int left;
-    int right;
-    int shoot;
+    int up{};
+    int down{};
+    int left{};
+    int right{};
+    int shoot{};
+    sf::Vector2i shoot_position{};
 };
 
 using GameComponentsList = ecs::ComponentList<
@@ -80,11 +81,15 @@ using MyTagList = ecs::TagList<
 >;
 
 using SPlayers = ecs::Signature<TPlayer, CTransform, CCollision, CShape, CInput>;
-using SBullets = ecs::Signature<TBullet, CTransform, CCollision, CShape, CLifespan>;
+using SBullets = ecs::Signature<TBullet, CTransform, CShape, CLifespan>;
 using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
+using STransform = ecs::Signature<CTransform>;
+using SRendering = ecs::Signature<CTransform, CShape>;
+using SLifespan = ecs::Signature<CLifespan, CShape>;
 using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CCollision, CShape, CLifespan, CScore>;
 
-using MySignatureList = ecs::SignatureList<SPlayers, SBullets, SEnemies, SSmallEnemies>;
+using MySignatureList = ecs::SignatureList<SPlayers, SBullets, SEnemies, STransform, SRendering, SLifespan,
+    SSmallEnemies>;
 
 using MySettings = ecs::Settings<GameComponentsList, MyTagList, MySignatureList>;
 
@@ -125,6 +130,19 @@ class Game {
 
     /// @brief Mise à jour du rendu
     auto render() -> void;
+
+    // Fonctions internes
+    auto sMovement(sf::Time delta_clock) -> void;
+
+    auto sUserInput() -> void;
+
+    auto sEnemySpawner() -> void;
+
+    auto sCollision() -> void;
+
+    auto sRender() -> void;
+
+    auto spawnBullet(sf::Vector2f initial_position, sf::Vector2f velocity) -> void;
 
 public:
     /// @brief Construit une instance du jeu

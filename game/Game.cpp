@@ -60,7 +60,7 @@ Game::Game(const std::string &configuration_file_path)
         this->window_.setFramerateLimit(static_cast<unsigned int>(framerate_limit));
     }
 
-    //this->window_.setKeyRepeatEnabled(false);
+    this->window_.setKeyRepeatEnabled(false);
 
     // Activation du context OpenGL
     if (!this->window_.setActive(true)) {
@@ -83,6 +83,7 @@ Game::Game(const std::string &configuration_file_path)
             << actualSettings.minorVersion << std::endl;
 
     spawnPlayer();
+    entity_manager_.refresh();
 }
 
 auto Game::run() -> void {
@@ -126,7 +127,7 @@ auto Game::spawnPlayer() -> void {
 
     transform.position = {window_.getSize().x / 2.f, window_.getSize().y / 2.f}; // NOLINT(*-narrowing-conversions)
     transform.scale = {1.f, 1.f};
-    transform.velocity = {player_settings.speed, player_settings.speed};
+    transform.velocity = {};
 
     collision.radius = player_settings.collision_radius;
 
@@ -146,24 +147,98 @@ auto Game::spawnPlayer() -> void {
     shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
 }
 
+auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f velocity) -> void {
+    auto &bullet_settings = configuration_manager_.getBulletSettings();
+    const auto bullet_entity_index_ = entity_manager_.createIndex();
+
+    entity_manager_.addTag<TBullet>(bullet_entity_index_);
+
+    // CTransform, CCollision, CShape, CLifespan
+
+    auto &transform(entity_manager_.addComponent<CTransform>(bullet_entity_index_));
+    auto &collision(entity_manager_.addComponent<CCollision>(bullet_entity_index_));
+    auto &shape(entity_manager_.addComponent<CShape>(bullet_entity_index_));
+    auto &lifespan(entity_manager_.addComponent<CLifespan>(bullet_entity_index_));
+
+    transform.position = initial_position;
+    transform.scale = {1.f, 1.f};
+    transform.velocity = velocity;
+
+    collision.radius = bullet_settings.collision_radius;
+
+    shape.circle = sf::CircleShape(bullet_settings.shape_radius);
+    shape.circle.setOrigin({bullet_settings.shape_radius, bullet_settings.shape_radius});
+    shape.circle.setFillColor({
+        static_cast<std::uint8_t>(bullet_settings.fill_color_r),
+        static_cast<std::uint8_t>(bullet_settings.fill_color_g),
+        static_cast<std::uint8_t>(bullet_settings.fill_color_b)
+    });
+    shape.circle.setOutlineColor({
+        static_cast<std::uint8_t>(bullet_settings.outline_color_r),
+        static_cast<std::uint8_t>(bullet_settings.outline_color_g),
+        static_cast<std::uint8_t>(bullet_settings.outline_color_b)
+    });
+    shape.circle.setOutlineThickness(bullet_settings.outline_thickness);
+    shape.circle.setPointCount(static_cast<std::size_t>(bullet_settings.shape_vertices));
+
+    lifespan.lifespan = lifespan.remaining = bullet_settings.lifespan;
+}
+
 auto Game::processInput() -> void {
+    auto &user_input(entity_manager_.getComponent<CInput>(player_entity_index_));
+
     this->window_.handleEvents(
         [&](const sf::Event::Closed &closed) {
             ImGui::SFML::ProcessEvent(this->window_, closed);
             running_ = false;
         },
+        [&](const sf::Event::MouseButtonPressed &mouse_button_pressed) {
+            ImGui::SFML::ProcessEvent(this->window_, mouse_button_pressed);
+
+            // Pour le moment on fait simple
+            if (mouse_button_pressed.button == sf::Mouse::Button::Left) {
+                user_input.shoot = true;
+                user_input.shoot_position = mouse_button_pressed.position;
+            }
+        },
         [&](const sf::Event::KeyPressed &key_pressed) {
             ImGui::SFML::ProcessEvent(this->window_, key_pressed);
-            std::cout << "KeyPress " << static_cast<int>(key_pressed.code) << std::endl;
+
+            // Pour le moment on fait simple...
+            if (key_pressed.code == sf::Keyboard::Key::Z) {
+                user_input.up = true;
+            }
+            if (key_pressed.code == sf::Keyboard::Key::Q) {
+                user_input.left = true;
+            }
+            if (key_pressed.code == sf::Keyboard::Key::S) {
+                user_input.down = true;
+            }
+            if (key_pressed.code == sf::Keyboard::Key::D) {
+                user_input.right = true;
+            }
+        },
+        [&](const sf::Event::KeyReleased &key_released) {
+            ImGui::SFML::ProcessEvent(this->window_, key_released);
+
+            // Pour le moment on fait simple...
+            if (key_released.code == sf::Keyboard::Key::Z) {
+                user_input.up = false;
+            }
+            if (key_released.code == sf::Keyboard::Key::Q) {
+                user_input.left = false;
+            }
+            if (key_released.code == sf::Keyboard::Key::S) {
+                user_input.down = false;
+            }
+            if (key_released.code == sf::Keyboard::Key::D) {
+                user_input.right = false;
+            }
         },
         [&](const sf::Event::Resized &resized) {
             ImGui::SFML::ProcessEvent(this->window_, resized);
             // TODO : Tester si c'est utile... En tout cas, je ne vois pas de différence avec ImGui
             glViewport(0, 0, static_cast<GLsizei>(resized.size.x), static_cast<GLsizei>(resized.size.y));
-        },
-        [&](const sf::Event::TextEntered &text_entered) {
-            ImGui::SFML::ProcessEvent(this->window_, text_entered);
-            std::cout << "Text entered : " << sf::String(text_entered.unicode).toAnsiString() << std::endl;
         },
         [&](const auto &event) {
             /* handle all other events */
@@ -181,14 +256,12 @@ auto Game::update() -> void {
         scene->update(delta_clock);
     }
 
-    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
-    auto &[circle](entity_manager_.getComponent<CShape>(player_entity_index_));
+    sUserInput();
+    sMovement(delta_clock);
+    sCollision();
+    sEnemySpawner();
 
-    transform.angle += 60.f * delta_clock.asSeconds();
-
-    circle.setPosition(transform.position);
-    circle.setScale(transform.scale);
-    circle.setRotation(sf::degrees(transform.angle));
+    entity_manager_.refresh();
 
     ImGui::Begin("Window title");
     ImGui::Text("Window Text rendered in %f sec!", this->delta_clock_.getElapsedTime().asSeconds());
@@ -197,7 +270,7 @@ auto Game::update() -> void {
     ImGui::End();
 
     // TODO : Just for whatching ImGui possibilities
-    ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
 }
 
 auto Game::render() -> void {
@@ -207,10 +280,128 @@ auto Game::render() -> void {
         scene->render();
     }
 
-    auto &[circle](entity_manager_.getComponent<CShape>(player_entity_index_));
-    this->window_.draw(circle);
+    sRender();
 
     ImGui::SFML::Render(this->window_);
 
     this->window_.display();
+}
+
+auto Game::sMovement(const sf::Time delta_clock) -> void {
+    // Déplacement du joueur
+    auto &player_settings = configuration_manager_.getPlayerSettings();
+    auto &bullet_settings = configuration_manager_.getBulletSettings();
+
+    // Toutes les entités doivent tourner
+    entity_manager_.forEntitiesMatching<STransform>(
+        [delta_clock](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    CTransform &transform) {
+            transform.angle += 60.f * delta_clock.asSeconds();
+        });
+
+    // Déplacement des entités
+    entity_manager_.forEntitiesMatching<SPlayers>(
+        [delta_clock, player_settings](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    CTransform &transform,
+    [[maybe_unused]] CCollision &collision,
+    [[maybe_unused]] CShape &shape,
+    [[maybe_unused]] CInput &input
+) {
+            transform.position += transform.velocity * player_settings.speed * delta_clock.asSeconds();
+        });
+
+    entity_manager_.forEntitiesMatching<SBullets>(
+        [delta_clock, bullet_settings](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    CTransform &transform,
+    [[maybe_unused]] CShape &shape,
+    [[maybe_unused]] CLifespan &lifespan
+) {
+            transform.position += transform.velocity * bullet_settings.speed * delta_clock.asSeconds();
+        });
+
+    // On met à jour les entités qui ont un lifespan
+    entity_manager_.forEntitiesMatching<SLifespan>(
+        [this](
+    const ecs::EntityIndex entity_index,
+    CLifespan &lifespan,
+    CShape &shape
+) {
+            lifespan.remaining -= 1;
+            if (lifespan.remaining == 0) {
+                entity_manager_.kill(entity_index);
+            }
+
+            const auto &fill_color = shape.circle.getFillColor();
+            const auto alpha = static_cast<unsigned char>((255 * lifespan.remaining) / lifespan.lifespan);
+            shape.circle.setFillColor(sf::Color{fill_color.r, fill_color.g, fill_color.b, alpha});
+        });
+}
+
+auto Game::sUserInput() -> void {
+    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
+    auto &input(entity_manager_.getComponent<CInput>(player_entity_index_));
+
+    sf::Vector2f direction;
+
+    if (input.up) {
+        direction.y = -1.f;
+    }
+    if (input.down) {
+        direction.y = 1.f;
+    }
+    if (input.left) {
+        direction.x = -1.f;
+    }
+    if (input.right) {
+        direction.x = 1.f;
+    }
+
+    // TODO : Je ne sais pas comment faire mieux à date...
+    if (direction != sf::Vector2f(0.f, 0.f)) {
+        transform.velocity = direction.normalized();
+    } else {
+        transform.velocity = sf::Vector2f(0.f, 0.f);
+    }
+
+    if (input.shoot) {
+        input.shoot = false;
+        spawnBullet(transform.position,
+                    (window_.mapPixelToCoords(input.shoot_position) - transform.position).normalized());
+    }
+}
+
+auto Game::sEnemySpawner() -> void {
+}
+
+auto Game::sCollision() -> void {
+    // The player cannot cross window
+    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
+    auto &[circle](entity_manager_.getComponent<CShape>(player_entity_index_));
+
+    if (transform.position.y < circle.getRadius()) {
+        transform.position.y = circle.getRadius();
+    }
+    if (transform.position.x < circle.getRadius()) {
+        transform.position.x = circle.getRadius();
+    }
+    if (transform.position.y > static_cast<float>(window_.getSize().y) - circle.getRadius()) {
+        transform.position.y = static_cast<float>(window_.getSize().y) - circle.getRadius();
+    }
+    if (transform.position.x > static_cast<float>(window_.getSize().x) - circle.getRadius()) {
+        transform.position.x = static_cast<float>(window_.getSize().x) - circle.getRadius();
+    }
+}
+
+auto Game::sRender() -> void {
+    entity_manager_.forEntitiesMatching<SRendering>(
+        [this]([[maybe_unused]] const ecs::EntityIndex entity_index, const CTransform &transform, CShape &shape) {
+            shape.circle.setPosition(transform.position);
+            shape.circle.setScale(transform.scale);
+            shape.circle.setRotation(sf::degrees(transform.angle));
+
+            this->window_.draw(shape.circle);
+        });
 }
