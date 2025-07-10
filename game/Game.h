@@ -161,6 +161,7 @@ public:
     auto window() -> sf::RenderWindow &;
 
     auto addPlayer() -> void;
+
     auto addEnemySpawner() -> void;
 
     //auto changeScene<T>() -> void;

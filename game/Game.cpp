@@ -470,8 +470,8 @@ auto Game::sCollision() -> void {
             }
             if (transform.position.y > static_cast<float>(window_.getSize().y) - shape.circle.getRadius()) {
                 transform.position.y = static_cast<float>(window_.getSize().y) - shape.circle.getRadius();
-        }
-        if (transform.position.x > static_cast<float>(window_.getSize().x) - shape.circle.getRadius()) {
+            }
+            if (transform.position.x > static_cast<float>(window_.getSize().x) - shape.circle.getRadius()) {
             transform.position.x = static_cast<float>(window_.getSize().x) - shape.circle.getRadius();
         }
     });
