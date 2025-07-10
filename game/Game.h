@@ -5,6 +5,7 @@
 #define GAME_H
 
 #include <map>
+#include <random>
 #include <SFML/Graphics.hpp>
 
 #include "scenes/Scene.h"
@@ -85,11 +86,12 @@ using SBullets = ecs::Signature<TBullet, CTransform, CShape, CLifespan>;
 using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
 using STransform = ecs::Signature<CTransform>;
 using SRendering = ecs::Signature<CTransform, CShape>;
-using SLifespan = ecs::Signature<CLifespan, CShape>;
+using SLifespan = ecs::Signature<CLifespan>;
+using SEnemiesSpawner = ecs::Signature<TSpawning, CLifespan>;
 using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CCollision, CShape, CLifespan, CScore>;
 
 using MySignatureList = ecs::SignatureList<SPlayers, SBullets, SEnemies, STransform, SRendering, SLifespan,
-    SSmallEnemies>;
+    SEnemiesSpawner, SSmallEnemies>;
 
 using MySettings = ecs::Settings<GameComponentsList, MyTagList, MySignatureList>;
 
@@ -121,6 +123,8 @@ class Game {
     sf::Clock delta_clock_;
     EntityManager entity_manager_;
     ecs::EntityIndex player_entity_index_{};
+    // Seed for random number
+    std::random_device random_device_;
 
     /// @brief Traite les inputs (clavier, souris, joystick...)
     auto processInput() -> void;
@@ -142,6 +146,8 @@ class Game {
 
     auto sRender() -> void;
 
+    auto sLifespanKiller() -> void;
+
     auto spawnBullet(sf::Vector2f initial_position, sf::Vector2f velocity) -> void;
 
 public:
@@ -154,7 +160,8 @@ public:
 
     auto window() -> sf::RenderWindow &;
 
-    auto spawnPlayer() -> void;
+    auto addPlayer() -> void;
+    auto addEnemySpawner() -> void;
 
     //auto changeScene<T>() -> void;
     //auto getAssets() -> Assets &;

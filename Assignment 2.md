@@ -109,14 +109,14 @@ Joueur :
 
 Ennemis :
 
-- [ ] Les ennemis apparaissent à une position aléatoire à l'écran toutes les X frames. X étant dans le fichier de
+- [x] Les ennemis apparaissent à une position aléatoire à l'écran toutes les X frames. X étant dans le fichier de
   configuration.
-- [ ] Les ennemis ne doivent pas déborder de l'écran lorsqu'ils apparaissent.
-- [ ] La forme des ennemis a un nombre aléatoire de vertices entre une valeur minimale et une valeur maximale
+- [x] Les ennemis ne doivent pas déborder de l'écran lorsqu'ils apparaissent.
+- [x] La forme des ennemis a un nombre aléatoire de vertices entre une valeur minimale et une valeur maximale
   définie dans le fichier de configuration.
-- [ ] Le radius de la forme d'un ennemi (sa taille) est spécifiée dans le fichier de configuration.
-- [ ] Les ennemis se voient attribuées une couleur aléatoire lorsqu'ils apparaissent.
-- [ ] Les ennemis se voient attribuées une vitesse aléatoire lorsqu'ils apparaissent entre une valeur minimale et
+- [x] Le radius de la forme d'un ennemi (sa taille) est spécifiée dans le fichier de configuration.
+- [x] Les ennemis se voient attribuées une couleur aléatoire lorsqu'ils apparaissent.
+- [x] Les ennemis se voient attribuées une vitesse aléatoire lorsqu'ils apparaissent entre une valeur minimale et
   une valeur maximale spécifiée dans le fichier de configuration.
 - [ ] Lorsqu'un ennemi atteint le bord de la fenêtre, il rebondit dans la direction opposée à la même vitesse.
 - [ ] Lorsqu'un grand ennemi entre en collision avec une balle ou le joueur, ils sont détruit et N petits ennemis

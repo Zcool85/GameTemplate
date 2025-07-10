@@ -82,7 +82,10 @@ Game::Game(const std::string &configuration_file_path)
             << actualSettings.majorVersion << "."
             << actualSettings.minorVersion << std::endl;
 
-    spawnPlayer();
+
+    addPlayer();
+    addEnemySpawner();
+
     entity_manager_.refresh();
 }
 
@@ -114,7 +117,7 @@ auto Game::window() -> sf::RenderWindow & {
     return this->window_;
 }
 
-auto Game::spawnPlayer() -> void {
+auto Game::addPlayer() -> void {
     auto &player_settings = configuration_manager_.getPlayerSettings();
     player_entity_index_ = entity_manager_.createIndex();
 
@@ -147,6 +150,16 @@ auto Game::spawnPlayer() -> void {
     shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
 }
 
+auto Game::addEnemySpawner() -> void {
+    auto &enemy_settings = configuration_manager_.getEnemySettings();
+    auto enemy_spawner_entity_index = entity_manager_.createIndex();
+
+    entity_manager_.addTag<TSpawning>(enemy_spawner_entity_index);
+
+    auto &lifespan(entity_manager_.addComponent<CLifespan>(enemy_spawner_entity_index));
+    lifespan.lifespan = lifespan.remaining = enemy_settings.spawn_interval;
+}
+
 auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f velocity) -> void {
     auto &bullet_settings = configuration_manager_.getBulletSettings();
     const auto bullet_entity_index_ = entity_manager_.createIndex();
@@ -162,7 +175,7 @@ auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f v
 
     transform.position = initial_position;
     transform.scale = {1.f, 1.f};
-    transform.velocity = velocity;
+    transform.velocity = velocity * bullet_settings.speed;
 
     collision.radius = bullet_settings.collision_radius;
 
@@ -288,59 +301,31 @@ auto Game::render() -> void {
 }
 
 auto Game::sMovement(const sf::Time delta_clock) -> void {
-    // Déplacement du joueur
-    auto &player_settings = configuration_manager_.getPlayerSettings();
-    auto &bullet_settings = configuration_manager_.getBulletSettings();
-
     // Toutes les entités doivent tourner
     entity_manager_.forEntitiesMatching<STransform>(
         [delta_clock](
     [[maybe_unused]] const ecs::EntityIndex entity_index,
     CTransform &transform) {
+            // Toutes les entités doivent tourner
             transform.angle += 60.f * delta_clock.asSeconds();
-        });
 
-    // Déplacement des entités
-    entity_manager_.forEntitiesMatching<SPlayers>(
-        [delta_clock, player_settings](
-    [[maybe_unused]] const ecs::EntityIndex entity_index,
-    CTransform &transform,
-    [[maybe_unused]] CCollision &collision,
-    [[maybe_unused]] CShape &shape,
-    [[maybe_unused]] CInput &input
-) {
-            transform.position += transform.velocity * player_settings.speed * delta_clock.asSeconds();
-        });
-
-    entity_manager_.forEntitiesMatching<SBullets>(
-        [delta_clock, bullet_settings](
-    [[maybe_unused]] const ecs::EntityIndex entity_index,
-    CTransform &transform,
-    [[maybe_unused]] CShape &shape,
-    [[maybe_unused]] CLifespan &lifespan
-) {
-            transform.position += transform.velocity * bullet_settings.speed * delta_clock.asSeconds();
+            // Toutes les entités doivent se déplacer suivant leur vélocité
+            transform.position += transform.velocity * delta_clock.asSeconds();
         });
 
     // On met à jour les entités qui ont un lifespan
     entity_manager_.forEntitiesMatching<SLifespan>(
-        [this](
-    const ecs::EntityIndex entity_index,
-    CLifespan &lifespan,
-    CShape &shape
+        [](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    CLifespan &lifespan
 ) {
             lifespan.remaining -= 1;
-            if (lifespan.remaining == 0) {
-                entity_manager_.kill(entity_index);
-            }
-
-            const auto &fill_color = shape.circle.getFillColor();
-            const auto alpha = static_cast<unsigned char>((255 * lifespan.remaining) / lifespan.lifespan);
-            shape.circle.setFillColor(sf::Color{fill_color.r, fill_color.g, fill_color.b, alpha});
         });
 }
 
 auto Game::sUserInput() -> void {
+    auto &player_settings = configuration_manager_.getPlayerSettings();
+
     auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
     auto &input(entity_manager_.getComponent<CInput>(player_entity_index_));
 
@@ -361,7 +346,7 @@ auto Game::sUserInput() -> void {
 
     // TODO : Je ne sais pas comment faire mieux à date...
     if (direction != sf::Vector2f(0.f, 0.f)) {
-        transform.velocity = direction.normalized();
+        transform.velocity = direction.normalized() * player_settings.speed;
     } else {
         transform.velocity = sf::Vector2f(0.f, 0.f);
     }
@@ -374,25 +359,123 @@ auto Game::sUserInput() -> void {
 }
 
 auto Game::sEnemySpawner() -> void {
+    // Mise à jour des entités permettant de spawner des ennemis
+    entity_manager_.forEntitiesMatching<SEnemiesSpawner>(
+        [this](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    CLifespan &lifespan
+) {
+            if (lifespan.remaining == 0) {
+                lifespan.remaining = lifespan.lifespan;
+
+                auto &enemy_settings = configuration_manager_.getEnemySettings();
+                auto enemy_entity_index_ = entity_manager_.createIndex();
+
+                entity_manager_.addTag<TEnemy>(enemy_entity_index_);
+
+                auto &transform(entity_manager_.addComponent<CTransform>(enemy_entity_index_));
+                auto &collision(entity_manager_.addComponent<CCollision>(enemy_entity_index_));
+                auto &shape(entity_manager_.addComponent<CShape>(enemy_entity_index_));
+                auto &score(entity_manager_.addComponent<CScore>(enemy_entity_index_));
+
+                std::mt19937 gen(random_device_());
+                std::uniform_real_distribution dis_x(0.f + enemy_settings.shape_radius,
+                                                     static_cast<float>(window_.getSize().x) - enemy_settings.
+                                                     shape_radius);
+                std::uniform_real_distribution dis_y(0.f + enemy_settings.shape_radius,
+                                                     static_cast<float>(window_.getSize().y) - enemy_settings.
+                                                     shape_radius);
+                std::uniform_real_distribution dis_speed(enemy_settings.min_speed, enemy_settings.max_speed);
+                std::uniform_int_distribution dis_color(0, 256);
+                std::uniform_int_distribution
+                        dis_vertices(enemy_settings.min_vertices, enemy_settings.max_vertices + 1);
+
+                transform.position = {dis_x(gen), dis_y(gen)};
+                transform.scale = {1.f, 1.f};
+                transform.velocity = {dis_speed(gen), dis_speed(gen)};
+
+                collision.radius = enemy_settings.collision_radius;
+
+                shape.circle = sf::CircleShape(enemy_settings.shape_radius);
+                shape.circle.setOrigin({enemy_settings.shape_radius, enemy_settings.shape_radius});
+                shape.circle.setFillColor({
+                    static_cast<std::uint8_t>(dis_color(gen)),
+                    static_cast<std::uint8_t>(dis_color(gen)),
+                    static_cast<std::uint8_t>(dis_color(gen))
+                });
+                shape.circle.setOutlineColor({
+                    static_cast<std::uint8_t>(enemy_settings.outline_color_r),
+                    static_cast<std::uint8_t>(enemy_settings.outline_color_g),
+                    static_cast<std::uint8_t>(enemy_settings.outline_color_b)
+                });
+                shape.circle.setOutlineThickness(enemy_settings.outline_thickness);
+                shape.circle.setPointCount(static_cast<std::size_t>(dis_vertices(gen)));
+
+                score.score = 100 * static_cast<int>(shape.circle.getPointCount());
+            }
+        });
+}
+
+auto Game::sLifespanKiller() -> void {
+    entity_manager_.forEntitiesMatching<SLifespan>(
+    [this](
+const ecs::EntityIndex entity_index,
+const CLifespan &lifespan
+) {
+            if (lifespan.remaining == 0) {
+                entity_manager_.kill(entity_index);
+            }
+        });
 }
 
 auto Game::sCollision() -> void {
     // The player cannot cross window
-    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
-    auto &[circle](entity_manager_.getComponent<CShape>(player_entity_index_));
+    entity_manager_.forEntitiesMatching<SPlayers>(
+        [this](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    [[maybe_unused]] CTransform &transform,
+    [[maybe_unused]] const CCollision &collision,
+    [[maybe_unused]] const CShape &shape,
+    [[maybe_unused]] const CInput &input
+) {
+            if (transform.position.y < shape.circle.getRadius()) {
+                transform.position.y = shape.circle.getRadius();
+            }
+            if (transform.position.x < shape.circle.getRadius()) {
+                transform.position.x = shape.circle.getRadius();
+            }
+            if (transform.position.y > static_cast<float>(window_.getSize().y) - shape.circle.getRadius()) {
+                transform.position.y = static_cast<float>(window_.getSize().y) - shape.circle.getRadius();
+            }
+            if (transform.position.x > static_cast<float>(window_.getSize().x) - shape.circle.getRadius()) {
+                transform.position.x = static_cast<float>(window_.getSize().x) - shape.circle.getRadius();
+            }
+        });
 
-    if (transform.position.y < circle.getRadius()) {
-        transform.position.y = circle.getRadius();
-    }
-    if (transform.position.x < circle.getRadius()) {
-        transform.position.x = circle.getRadius();
-    }
-    if (transform.position.y > static_cast<float>(window_.getSize().y) - circle.getRadius()) {
-        transform.position.y = static_cast<float>(window_.getSize().y) - circle.getRadius();
-    }
-    if (transform.position.x > static_cast<float>(window_.getSize().x) - circle.getRadius()) {
-        transform.position.x = static_cast<float>(window_.getSize().x) - circle.getRadius();
-    }
+    // The enemies cannot cross window and bounce in the opposite way
+    entity_manager_.forEntitiesMatching<SEnemies>(
+        [this](
+    [[maybe_unused]] const ecs::EntityIndex entity_index,
+    [[maybe_unused]] CTransform &transform,
+    [[maybe_unused]] const CCollision &collision,
+    [[maybe_unused]] const CShape &shape,
+    [[maybe_unused]] const CScore &score
+) {
+            // TODO : A coder !!!
+            if (transform.position.y < shape.circle.getRadius()) {
+                transform.position.y = shape.circle.getRadius();
+            }
+            if (transform.position.x < shape.circle.getRadius()) {
+                transform.position.x = shape.circle.getRadius();
+            }
+            if (transform.position.y > static_cast<float>(window_.getSize().y) - shape.circle.getRadius()) {
+                transform.position.y = static_cast<float>(window_.getSize().y) - shape.circle.getRadius();
+        }
+        if (transform.position.x > static_cast<float>(window_.getSize().x) - shape.circle.getRadius()) {
+            transform.position.x = static_cast<float>(window_.getSize().x) - shape.circle.getRadius();
+        }
+    });
+
 }
 
 auto Game::sRender() -> void {
@@ -401,6 +484,14 @@ auto Game::sRender() -> void {
             shape.circle.setPosition(transform.position);
             shape.circle.setScale(transform.scale);
             shape.circle.setRotation(sf::degrees(transform.angle));
+
+            if (entity_manager_.hasComponent<CLifespan>(entity_index)) {
+                auto &lifespan(entity_manager_.getComponent<CLifespan>(entity_index));
+
+                const auto &fill_color = shape.circle.getFillColor();
+                const auto alpha = static_cast<unsigned char>((255 * lifespan.remaining) / lifespan.lifespan);
+                shape.circle.setFillColor(sf::Color{fill_color.r, fill_color.g, fill_color.b, alpha});
+            }
 
             this->window_.draw(shape.circle);
         });
