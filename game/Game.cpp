@@ -129,14 +129,14 @@ auto Game::addEnemySpawner() -> void {
 
 auto Game::spawnPlayer() -> void {
     auto &player_settings = configuration_manager_.getPlayerSettings();
-    player_entity_index_ = entity_manager_.createIndex();
+    player_entity_handle_ = entity_manager_.createHandle();
 
-    entity_manager_.addTag<TPlayer>(player_entity_index_);
+    entity_manager_.addTag<TPlayer>(player_entity_handle_);
 
-    auto &transform(entity_manager_.addComponent<CTransform>(player_entity_index_));
-    auto &collision(entity_manager_.addComponent<CCollision>(player_entity_index_));
-    auto &shape(entity_manager_.addComponent<CShape>(player_entity_index_));
-    entity_manager_.addComponent<CInput>(player_entity_index_);
+    auto &transform(entity_manager_.addComponent<CTransform>(player_entity_handle_));
+    auto &collision(entity_manager_.addComponent<CCollision>(player_entity_handle_));
+    auto &shape(entity_manager_.addComponent<CShape>(player_entity_handle_));
+    entity_manager_.addComponent<CInput>(player_entity_handle_);
 
     transform.position = {window_.getSize().x / 2.f, window_.getSize().y / 2.f}; // NOLINT(*-narrowing-conversions)
     transform.scale = {1.f, 1.f};
@@ -197,8 +197,53 @@ auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f v
     lifespan.lifespan = lifespan.remaining = bullet_settings.lifespan;
 }
 
+auto Game::spawnLittleEnemies(const std::size_t number_of_little_enemies, const sf::Vector2f initial_position,
+                              const float initial_angle, const sf::Vector2f velocity, const sf::Color color,
+                              const std::size_t vertices, const int enemy_score) -> void {
+    auto small_enemy_angle = initial_angle;
+
+    for (std::size_t i = 0; i < number_of_little_enemies; ++i) {
+        auto &enemy_settings = configuration_manager_.getEnemySettings();
+        const auto little_enemy_entity_index_ = entity_manager_.createIndex();
+
+        entity_manager_.addTag<TEnemy>(little_enemy_entity_index_);
+        entity_manager_.addTag<TLittleEnemy>(little_enemy_entity_index_);
+
+        // CTransform, CCollision, CShape, CLifespan, CScore
+
+        auto &transform(entity_manager_.addComponent<CTransform>(little_enemy_entity_index_));
+        auto &collision(entity_manager_.addComponent<CCollision>(little_enemy_entity_index_));
+        auto &shape(entity_manager_.addComponent<CShape>(little_enemy_entity_index_));
+        auto &lifespan(entity_manager_.addComponent<CLifespan>(little_enemy_entity_index_));
+        auto &score(entity_manager_.addComponent<CScore>(little_enemy_entity_index_));
+
+        transform.position = initial_position;
+        transform.scale = {1.f, 1.f};
+        transform.velocity = velocity.rotatedBy(sf::degrees(small_enemy_angle));
+
+        collision.radius = enemy_settings.collision_radius * 0.5f;
+
+        shape.circle = sf::CircleShape(enemy_settings.shape_radius * 0.5f);
+        shape.circle.setOrigin({enemy_settings.shape_radius * 0.5f, enemy_settings.shape_radius * 0.5f});
+        shape.circle.setFillColor(color);
+        shape.circle.setOutlineColor({
+            static_cast<std::uint8_t>(enemy_settings.outline_color_r),
+            static_cast<std::uint8_t>(enemy_settings.outline_color_g),
+            static_cast<std::uint8_t>(enemy_settings.outline_color_b)
+        });
+        shape.circle.setOutlineThickness(enemy_settings.outline_thickness);
+        shape.circle.setPointCount(vertices);
+
+        lifespan.lifespan = lifespan.remaining = enemy_settings.small_lifespan;
+
+        score.score = enemy_score * 2;
+
+        small_enemy_angle += 360.f / static_cast<float>(vertices);
+    }
+}
+
 auto Game::processInput() -> void {
-    auto &user_input(entity_manager_.getComponent<CInput>(player_entity_index_));
+    auto &user_input(entity_manager_.getComponent<CInput>(player_entity_handle_));
 
     this->window_.handleEvents(
         [&](const sf::Event::Closed &closed) {
@@ -273,6 +318,7 @@ auto Game::update() -> void {
     sMovement(delta_clock);
     sCollision();
     sEnemySpawner();
+    sLifespanKiller();
 
     entity_manager_.refresh();
 
@@ -326,8 +372,8 @@ auto Game::sMovement(const sf::Time delta_clock) -> void {
 auto Game::sUserInput() -> void {
     auto &player_settings = configuration_manager_.getPlayerSettings();
 
-    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_index_));
-    auto &input(entity_manager_.getComponent<CInput>(player_entity_index_));
+    auto &transform(entity_manager_.getComponent<CTransform>(player_entity_handle_));
+    auto &input(entity_manager_.getComponent<CInput>(player_entity_handle_));
 
     sf::Vector2f direction;
 
@@ -428,7 +474,84 @@ const CLifespan &lifespan
         });
 }
 
+static auto checkColision(const sf::Vector2f position1, const sf::Vector2f position2, const float radius1,
+                          const float radius2) -> bool {
+    float distanceX = position1.x - position2.x;
+    float distanceY = position1.y - position2.y;
+    float distanceSquared = distanceX * distanceX + distanceY * distanceY;
+    float radiusSquared = radius1 * radius1 + radius2 * radius2;
+
+    return distanceSquared <= radiusSquared;
+}
+
 auto Game::sCollision() -> void {
+    // Les balles percutent-elles les ennemis ?
+    // Pour chaque ennemi
+    entity_manager_.forEntitiesMatching<SEnemies>(
+        [this](
+    [[maybe_unused]] const ecs::EntityIndex enemy_entity_index,
+    [[maybe_unused]] const CTransform &enemy_transform,
+    [[maybe_unused]] const CCollision &enemy_collision,
+    [[maybe_unused]] const CShape &enemy_shape,
+    [[maybe_unused]] const CScore &enemy_score
+) {
+            if (!entity_manager_.isAlive(enemy_entity_index)) return;
+            entity_manager_.forEntitiesMatching<SBullets>(
+                [this, &enemy_shape, &enemy_transform, &enemy_score, &enemy_entity_index](
+            [[maybe_unused]] const ecs::EntityIndex bullet_entity_index,
+            [[maybe_unused]] const CTransform &bullet_transform,
+            [[maybe_unused]] const CCollision &bullet_collision,
+            [[maybe_unused]] const CShape &bullet_shape,
+            [[maybe_unused]] const CLifespan &bullet_lifespan
+        ) {
+                    if (!entity_manager_.isAlive(bullet_entity_index)) return;
+                    if (checkColision(enemy_transform.position, bullet_transform.position,
+                                      enemy_shape.circle.getRadius(), bullet_shape.circle.getRadius())) {
+                        // TODO : Add score
+                        if (!entity_manager_.hasTag<TLittleEnemy>(enemy_entity_index)) {
+                            spawnLittleEnemies(
+                                enemy_shape.circle.getPointCount(),
+                                enemy_transform.position,
+                                enemy_transform.angle,
+                                enemy_transform.velocity,
+                                enemy_shape.circle.getFillColor(),
+                                enemy_shape.circle.getPointCount(),
+                                enemy_score.score
+                            );
+                        }
+                        entity_manager_.kill(enemy_entity_index);
+                        entity_manager_.kill(bullet_entity_index);
+                    }
+                });
+
+            if (!entity_manager_.isAlive(enemy_entity_index)) return;
+
+            if (!entity_manager_.isAlive(player_entity_handle_)) return;
+
+            auto &player_transform(entity_manager_.getComponent<CTransform>(player_entity_handle_));
+            auto &player_shape(entity_manager_.getComponent<CShape>(player_entity_handle_));
+
+            if (checkColision(enemy_transform.position, player_transform.position, enemy_shape.circle.getRadius(),
+                              player_shape.circle.getRadius())) {
+                if (!entity_manager_.hasTag<TLittleEnemy>(enemy_entity_index)) {
+                    spawnLittleEnemies(
+                        enemy_shape.circle.getPointCount(),
+                        enemy_transform.position,
+                        enemy_transform.angle,
+                        enemy_transform.velocity,
+                        enemy_shape.circle.getFillColor(),
+                        enemy_shape.circle.getPointCount(),
+                        enemy_score.score
+                    );
+                }
+                entity_manager_.kill(enemy_entity_index);
+                entity_manager_.kill(player_entity_handle_);
+
+                spawnPlayer();
+            }
+
+    });
+
     // Any object cannot cross window
     entity_manager_.forEntitiesMatching<SPlayers>(
         [this](
@@ -478,7 +601,6 @@ auto Game::sCollision() -> void {
                 transform.velocity.x = -transform.velocity.x;
             }
         });
-
 }
 
 auto Game::sRender() -> void {

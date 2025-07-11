@@ -95,7 +95,7 @@ Les limitations :
 Joueur :
 
 - [x] Le joueur est représenté par une forme qui est définie dans le fichier de configuration.
-- [ ] Le joueur doit apparaitre au centre de l'écran au début du jeu, et lorsqu'il meurt (lorsqu'il entre en
+- [x] Le joueur doit apparaitre au centre de l'écran au début du jeu, et lorsqu'il meurt (lorsqu'il entre en
   collision avec un ennemi).
 - [x] Le joueur se déplace avec une vitesse déterminée dans le fichier de configuration dans les 4 directions
   suivantes :
@@ -119,14 +119,14 @@ Ennemis :
 - [x] Les ennemis se voient attribuées une vitesse aléatoire lorsqu'ils apparaissent entre une valeur minimale et
   une valeur maximale spécifiée dans le fichier de configuration.
 - [x] Lorsqu'un ennemi atteint le bord de la fenêtre, il rebondit dans la direction opposée à la même vitesse.
-- [ ] Lorsqu'un grand ennemi entre en collision avec une balle ou le joueur, ils sont détruit et N petits ennemis
+- [x] Lorsqu'un grand ennemi entre en collision avec une balle ou le joueur, ils sont détruit et N petits ennemis
   apparaissent à la place. N est le nombre de vertices de l'ennemi original. Chaque petit ennemi doit avoir
   le même nombre de vertices et la même couleur que l'ennemi original. Les petits ennemis sont propagés à chaque
   angle de l'ennemie original.
 
 Score :
 
-- [ ] À chaque fois qu'un ennemi apparait, il lui ait attribué un score de N*100, où N est le nombre de vertices. Les
+- [x] À chaque fois qu'un ennemi apparait, il lui ait attribué un score de N*100, où N est le nombre de vertices. Les
   petits ennemis doublent la valeur.
 - [ ] Si le joueur tue un ennemi, le score du jeu est incrémenté du score de l'ennemi tué.
 - [ ] Le score doit être affiché en haut à gauche de l'écran dans la police de caractères spécifiée dans le fichier de
@@ -135,7 +135,7 @@ Score :
 Dessin :
 
 - [x] Dans le système de rendu, toutes les entités doivent avoir une rotation lente.
-- [ ] Une entité avec un Lifespan doit avoir sa couleur du canal alpha positionné à un ratio du temps restant à vivre.
+- [x] Une entité avec un Lifespan doit avoir sa couleur du canal alpha positionné à un ratio du temps restant à vivre.
 
 Interface graphique :
 

@@ -67,7 +67,7 @@ struct TBullet {
 struct TEnemy {
 };
 
-struct TSmallEnemy {
+struct TLittleEnemy {
 };
 
 struct TSpawning {
@@ -77,21 +77,27 @@ using MyTagList = ecs::TagList<
     TPlayer,
     TBullet,
     TEnemy,
-    TSmallEnemy,
+    TLittleEnemy,
     TSpawning
 >;
 
 using SPlayers = ecs::Signature<TPlayer, CTransform, CCollision, CShape, CInput>;
-using SBullets = ecs::Signature<TBullet, CTransform, CShape, CLifespan>;
+using SBullets = ecs::Signature<TBullet, CTransform, CCollision, CShape, CLifespan>;
 using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
 using STransform = ecs::Signature<CTransform>;
 using SRendering = ecs::Signature<CTransform, CShape>;
 using SLifespan = ecs::Signature<CLifespan>;
 using SEnemiesSpawner = ecs::Signature<TSpawning, CLifespan>;
-using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CCollision, CShape, CLifespan, CScore>;
 
-using MySignatureList = ecs::SignatureList<SPlayers, SBullets, SEnemies, STransform, SRendering, SLifespan,
-    SEnemiesSpawner, SSmallEnemies>;
+using MySignatureList = ecs::SignatureList<
+    SPlayers,
+    SBullets,
+    SEnemies,
+    STransform,
+    SRendering,
+    SLifespan,
+    SEnemiesSpawner
+>;
 
 using MySettings = ecs::Settings<GameComponentsList, MyTagList, MySignatureList>;
 
@@ -122,7 +128,7 @@ class Game {
     std::shared_ptr<Scene> current_scene_;
     sf::Clock delta_clock_;
     EntityManager entity_manager_;
-    ecs::EntityIndex player_entity_index_{};
+    ecs::impl::Handle player_entity_handle_{};
     // Seed for random number
     std::random_device random_device_;
 
@@ -149,6 +155,9 @@ class Game {
     auto sLifespanKiller() -> void;
 
     auto spawnBullet(sf::Vector2f initial_position, sf::Vector2f velocity) -> void;
+
+    auto spawnLittleEnemies(std::size_t number_of_little_enemies, sf::Vector2f initial_position, float initial_angle,
+                            sf::Vector2f velocity, sf::Color color, std::size_t vertices, int enemy_score) -> void;
 
 public:
     /// @brief Construit une instance du jeu
