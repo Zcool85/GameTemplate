@@ -83,7 +83,7 @@ Game::Game(const std::string &configuration_file_path)
             << actualSettings.minorVersion << std::endl;
 
 
-    addPlayer();
+    spawnPlayer();
     addEnemySpawner();
 
     entity_manager_.refresh();
@@ -117,7 +117,17 @@ auto Game::window() -> sf::RenderWindow & {
     return this->window_;
 }
 
-auto Game::addPlayer() -> void {
+auto Game::addEnemySpawner() -> void {
+    auto &enemy_settings = configuration_manager_.getEnemySettings();
+    auto enemy_spawner_entity_index = entity_manager_.createIndex();
+
+    entity_manager_.addTag<TSpawning>(enemy_spawner_entity_index);
+
+    auto &lifespan(entity_manager_.addComponent<CLifespan>(enemy_spawner_entity_index));
+    lifespan.lifespan = lifespan.remaining = enemy_settings.spawn_interval;
+}
+
+auto Game::spawnPlayer() -> void {
     auto &player_settings = configuration_manager_.getPlayerSettings();
     player_entity_index_ = entity_manager_.createIndex();
 
@@ -148,16 +158,6 @@ auto Game::addPlayer() -> void {
     });
     shape.circle.setOutlineThickness(player_settings.outline_thickness);
     shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
-}
-
-auto Game::addEnemySpawner() -> void {
-    auto &enemy_settings = configuration_manager_.getEnemySettings();
-    auto enemy_spawner_entity_index = entity_manager_.createIndex();
-
-    entity_manager_.addTag<TSpawning>(enemy_spawner_entity_index);
-
-    auto &lifespan(entity_manager_.addComponent<CLifespan>(enemy_spawner_entity_index));
-    lifespan.lifespan = lifespan.remaining = enemy_settings.spawn_interval;
 }
 
 auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f velocity) -> void {
@@ -429,7 +429,7 @@ const CLifespan &lifespan
 }
 
 auto Game::sCollision() -> void {
-    // The player cannot cross window
+    // Any object cannot cross window
     entity_manager_.forEntitiesMatching<SPlayers>(
         [this](
     [[maybe_unused]] const ecs::EntityIndex entity_index,
@@ -461,20 +461,23 @@ auto Game::sCollision() -> void {
     [[maybe_unused]] const CShape &shape,
     [[maybe_unused]] const CScore &score
 ) {
-            // TODO : A coder !!!
             if (transform.position.y < shape.circle.getRadius()) {
                 transform.position.y = shape.circle.getRadius();
+                transform.velocity.y = -transform.velocity.y;
             }
             if (transform.position.x < shape.circle.getRadius()) {
                 transform.position.x = shape.circle.getRadius();
+                transform.velocity.x = -transform.velocity.x;
             }
             if (transform.position.y > static_cast<float>(window_.getSize().y) - shape.circle.getRadius()) {
                 transform.position.y = static_cast<float>(window_.getSize().y) - shape.circle.getRadius();
+                transform.velocity.y = -transform.velocity.y;
             }
             if (transform.position.x > static_cast<float>(window_.getSize().x) - shape.circle.getRadius()) {
-            transform.position.x = static_cast<float>(window_.getSize().x) - shape.circle.getRadius();
-        }
-    });
+                transform.position.x = static_cast<float>(window_.getSize().x) - shape.circle.getRadius();
+                transform.velocity.x = -transform.velocity.x;
+            }
+        });
 
 }
 

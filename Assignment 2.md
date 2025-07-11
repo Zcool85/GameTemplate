@@ -118,7 +118,7 @@ Ennemis :
 - [x] Les ennemis se voient attribuées une couleur aléatoire lorsqu'ils apparaissent.
 - [x] Les ennemis se voient attribuées une vitesse aléatoire lorsqu'ils apparaissent entre une valeur minimale et
   une valeur maximale spécifiée dans le fichier de configuration.
-- [ ] Lorsqu'un ennemi atteint le bord de la fenêtre, il rebondit dans la direction opposée à la même vitesse.
+- [x] Lorsqu'un ennemi atteint le bord de la fenêtre, il rebondit dans la direction opposée à la même vitesse.
 - [ ] Lorsqu'un grand ennemi entre en collision avec une balle ou le joueur, ils sont détruit et N petits ennemis
   apparaissent à la place. N est le nombre de vertices de l'ennemi original. Chaque petit ennemi doit avoir
   le même nombre de vertices et la même couleur que l'ennemi original. Les petits ennemis sont propagés à chaque

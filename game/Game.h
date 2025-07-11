@@ -160,7 +160,7 @@ public:
 
     auto window() -> sf::RenderWindow &;
 
-    auto addPlayer() -> void;
+    auto spawnPlayer() -> void;
 
     auto addEnemySpawner() -> void;
 
