@@ -173,10 +173,9 @@ auto Game::spawnPlayer() -> void {
 }
 
 auto Game::spawnBullet(const ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void {
-
     const auto &player_transform(entity_manager_.getComponent<CTransform>(player_handle));
 
-    const sf::Vector2f direction  = (target - player_transform.position).normalized();
+    const sf::Vector2f direction = (target - player_transform.position).normalized();
 
     const auto &bullet_settings = configuration_manager_.getBulletSettings();
     const auto bullet_entity_index_ = entity_manager_.createIndex();

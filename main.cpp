@@ -4,8 +4,6 @@
 #include "game/Game.h"
 
 int main(const int argc, char *argv[]) {
-
-
     sf::Vector2f position1{1, 2};
     sf::Vector2f position2{4, -1};
     sf::Vector2f sum = position1 + position2;
