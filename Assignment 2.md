@@ -139,12 +139,12 @@ Dessin :
 
 Interface graphique :
 
-- [ ] La GUI doit afficher des options pour stopper chaque fonction système de manière indépendante.
-- [ ] Pour chaque entité du jeu, la GUI doit lister l'ID, le Tag et la position de l'entité. La liste de toutes
+- [x] La GUI doit afficher des options pour stopper chaque fonction système de manière indépendante.
+- [x] Pour chaque entité du jeu, la GUI doit lister l'ID, le Tag et la position de l'entité. La liste de toutes
   les entités doit être affichée. On doit pouvoir visualiser la liste par tag. Il doit y avoir un moyen pour
   supprimer une entité par ce menu.
-- [ ] On doit pouvoir changer l'intervalle d'apparition des ennemis.
-- [ ] On doit pouvoir faire apparaitre un ennemi depuis la GUI.
+- [x] On doit pouvoir changer l'intervalle d'apparition des ennemis.
+- [x] On doit pouvoir faire apparaitre un ennemi depuis la GUI.
 
 Autre :
 

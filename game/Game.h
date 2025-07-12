@@ -53,6 +53,13 @@ class Game {
     int current_frame_;
     bool pause_;
 
+    bool is_movements_system_active = true;
+    bool is_lifespan_system_active = true;
+    bool is_collision_system_active = true;
+    bool is_enemy_spawning_system_active = true;
+    bool is_gui_system_active = true;
+    bool is_render_system_active = true;
+
     /// @brief Mise à jour des données
     auto update() -> void;
 
@@ -62,7 +69,7 @@ class Game {
 
     auto sLifespan() -> void;
 
-    auto sRender() -> void;
+    auto sRender(sf::Time delta_clock) -> void;
 
     auto sGUI() -> void;
 
@@ -71,6 +78,8 @@ class Game {
 
     // Fonctions internes
     auto spawnPlayer() -> void;
+
+    auto spawnEnemy() -> void;
 
     auto spawnBullet(ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void;
 

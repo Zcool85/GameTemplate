@@ -172,6 +172,53 @@ auto Game::spawnPlayer() -> void {
     shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
 }
 
+auto Game::spawnEnemy() -> void {
+    const auto &enemy_settings = configuration_manager_.getEnemySettings();
+
+    const auto enemy_entity_index_ = entity_manager_.createIndex();
+
+    entity_manager_.addTag<TEnemy>(enemy_entity_index_);
+
+    auto &transform(entity_manager_.addComponent<CTransform>(enemy_entity_index_));
+    auto &collision(entity_manager_.addComponent<CCollision>(enemy_entity_index_));
+    auto &shape(entity_manager_.addComponent<CShape>(enemy_entity_index_));
+    auto &score(entity_manager_.addComponent<CScore>(enemy_entity_index_));
+
+    std::mt19937 gen(random_device_());
+    std::uniform_real_distribution dis_x(0.f + enemy_settings.shape_radius,
+                                         static_cast<float>(window_.getSize().x) - enemy_settings.
+                                         shape_radius);
+    std::uniform_real_distribution dis_y(0.f + enemy_settings.shape_radius,
+                                         static_cast<float>(window_.getSize().y) - enemy_settings.
+                                         shape_radius);
+    std::uniform_real_distribution dis_speed(enemy_settings.min_speed, enemy_settings.max_speed);
+    std::uniform_int_distribution dis_color(0, 256);
+    std::uniform_int_distribution
+            dis_vertices(enemy_settings.min_vertices, enemy_settings.max_vertices + 1);
+
+    transform.position = {dis_x(gen), dis_y(gen)};
+    transform.velocity = {dis_speed(gen), dis_speed(gen)};
+
+    collision.radius = enemy_settings.collision_radius;
+
+    shape.circle = sf::CircleShape(enemy_settings.shape_radius);
+    shape.circle.setOrigin({enemy_settings.shape_radius, enemy_settings.shape_radius});
+    shape.circle.setFillColor({
+        static_cast<std::uint8_t>(dis_color(gen)),
+        static_cast<std::uint8_t>(dis_color(gen)),
+        static_cast<std::uint8_t>(dis_color(gen))
+    });
+    shape.circle.setOutlineColor({
+        static_cast<std::uint8_t>(enemy_settings.outline_color_r),
+        static_cast<std::uint8_t>(enemy_settings.outline_color_g),
+        static_cast<std::uint8_t>(enemy_settings.outline_color_b)
+    });
+    shape.circle.setOutlineThickness(enemy_settings.outline_thickness);
+    shape.circle.setPointCount(static_cast<std::size_t>(dis_vertices(gen)));
+
+    score.score = 100 * static_cast<int>(shape.circle.getPointCount());
+}
+
 auto Game::spawnBullet(const ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void {
     const auto &player_transform(entity_manager_.getComponent<CTransform>(player_handle));
 
@@ -289,12 +336,14 @@ auto Game::update() -> void {
 
     entity_manager_.refresh();
 
-    sRender();
+    sRender(delta_clock);
 
     current_frame_++;
 }
 
 auto Game::sMovement(const sf::Time delta_clock) -> void {
+    if (!is_movements_system_active) return;
+
     const auto &player_settings = configuration_manager_.getPlayerSettings();
 
     auto &transform(entity_manager_.getComponent<CTransform>(player_entity_handle_));
@@ -331,12 +380,9 @@ auto Game::sMovement(const sf::Time delta_clock) -> void {
     entity_manager_.forEntitiesMatching<STransform>(
         [delta_clock](
     [[maybe_unused]] const ecs::EntityIndex entity_index,
-    CTransform &transform) {
-            // Toutes les entités doivent tourner
-            transform.angle += 60.f * delta_clock.asSeconds();
-
+    CTransform &entity_transform) {
             // Toutes les entités doivent se déplacer suivant leur vélocité
-            transform.position += transform.velocity * delta_clock.asSeconds();
+            entity_transform.position += entity_transform.velocity * delta_clock.asSeconds();
         });
 }
 
@@ -404,55 +450,18 @@ auto Game::sUserInput() -> void {
 }
 
 auto Game::sEnemySpawner() -> void {
+    if (!is_enemy_spawning_system_active) return;
+
     const auto &enemy_settings = configuration_manager_.getEnemySettings();
 
     if (current_frame_ % enemy_settings.spawn_interval == 0) {
-        const auto enemy_entity_index_ = entity_manager_.createIndex();
-
-        entity_manager_.addTag<TEnemy>(enemy_entity_index_);
-
-        auto &transform(entity_manager_.addComponent<CTransform>(enemy_entity_index_));
-        auto &collision(entity_manager_.addComponent<CCollision>(enemy_entity_index_));
-        auto &shape(entity_manager_.addComponent<CShape>(enemy_entity_index_));
-        auto &score(entity_manager_.addComponent<CScore>(enemy_entity_index_));
-
-        std::mt19937 gen(random_device_());
-        std::uniform_real_distribution dis_x(0.f + enemy_settings.shape_radius,
-                                             static_cast<float>(window_.getSize().x) - enemy_settings.
-                                             shape_radius);
-        std::uniform_real_distribution dis_y(0.f + enemy_settings.shape_radius,
-                                             static_cast<float>(window_.getSize().y) - enemy_settings.
-                                             shape_radius);
-        std::uniform_real_distribution dis_speed(enemy_settings.min_speed, enemy_settings.max_speed);
-        std::uniform_int_distribution dis_color(0, 256);
-        std::uniform_int_distribution
-                dis_vertices(enemy_settings.min_vertices, enemy_settings.max_vertices + 1);
-
-        transform.position = {dis_x(gen), dis_y(gen)};
-        transform.velocity = {dis_speed(gen), dis_speed(gen)};
-
-        collision.radius = enemy_settings.collision_radius;
-
-        shape.circle = sf::CircleShape(enemy_settings.shape_radius);
-        shape.circle.setOrigin({enemy_settings.shape_radius, enemy_settings.shape_radius});
-        shape.circle.setFillColor({
-            static_cast<std::uint8_t>(dis_color(gen)),
-            static_cast<std::uint8_t>(dis_color(gen)),
-            static_cast<std::uint8_t>(dis_color(gen))
-        });
-        shape.circle.setOutlineColor({
-            static_cast<std::uint8_t>(enemy_settings.outline_color_r),
-            static_cast<std::uint8_t>(enemy_settings.outline_color_g),
-            static_cast<std::uint8_t>(enemy_settings.outline_color_b)
-        });
-        shape.circle.setOutlineThickness(enemy_settings.outline_thickness);
-        shape.circle.setPointCount(static_cast<std::size_t>(dis_vertices(gen)));
-
-        score.score = 100 * static_cast<int>(shape.circle.getPointCount());
+        spawnEnemy();
     }
 }
 
 auto Game::sLifespan() -> void {
+    if (!is_lifespan_system_active) return;
+
     entity_manager_.forEntitiesMatching<SLifespan>(
         [this](
     const ecs::EntityIndex entity_index,
@@ -471,6 +480,8 @@ auto Game::sLifespan() -> void {
 }
 
 auto Game::sCollision() -> void {
+    if (!is_collision_system_active) return;
+
     auto &player_transform(entity_manager_.getComponent<CTransform>(player_entity_handle_));
     auto &player_collision(entity_manager_.getComponent<CCollision>(player_entity_handle_));
 
@@ -564,22 +575,31 @@ auto Game::sCollision() -> void {
         });
 }
 
-auto Game::sRender() -> void {
+auto Game::sRender(const sf::Time delta_clock) -> void {
     this->window_.clear();
 
     for (const auto &scene: this->scenes_ | std::views::values) {
         scene->render();
     }
 
-    entity_manager_.forEntitiesMatching<SRendering>(
-        [this]([[maybe_unused]] const ecs::EntityIndex entity_index, const CTransform &transform, CShape &shape) {
-            shape.circle.setPosition(transform.position);
-            shape.circle.setRotation(sf::degrees(transform.angle));
+    if (is_render_system_active) {
+        entity_manager_.forEntitiesMatching<SRendering>(
+            [this, &delta_clock]([[maybe_unused]] const ecs::EntityIndex entity_index, CTransform &transform,
+                                 CShape &shape) {
+                // Toutes les entités doivent tourner
+                transform.angle += 60.f * delta_clock.asSeconds();
 
-            this->window_.draw(shape.circle);
-        });
+                shape.circle.setPosition(transform.position);
+                shape.circle.setRotation(sf::degrees(transform.angle));
 
-    this->window_.draw(score_text_);
+                this->window_.draw(shape.circle);
+            });
+
+        score_text_.setString(set_score_text(score_));
+
+        this->window_.draw(score_text_);
+    }
+
 
     ImGui::SFML::Render(this->window_);
 
@@ -587,14 +607,138 @@ auto Game::sRender() -> void {
 }
 
 auto Game::sGUI() -> void {
-    score_text_.setString(set_score_text(score_));
+    if (!is_gui_system_active) return;
+
+    auto &enemy_settings = configuration_manager_.getEnemySettings();
 
     ImGui::Begin("Geometry Wars");
     ImGui::Text("Window Text rendered in %f sec!", this->delta_clock_.getElapsedTime().asSeconds());
-    // ImGui::Checkbox("Circle", &circleExists);
-    // ImGui::SliderFloat("Raduis", &circleRadius, 0.0f, 100.0f);
+
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    if (ImGui::BeginTabBar("GeometryWarsTabBar", tab_bar_flags)) {
+        if (ImGui::BeginTabItem("Systems")) {
+            ImGui::Text("Systems tab\nPermet de désactiver les systèmes du jeu");
+            ImGui::Checkbox("Movements", &is_movements_system_active);
+            ImGui::Checkbox("Lifespan", &is_lifespan_system_active);
+            ImGui::Checkbox("Collision", &is_collision_system_active);
+            ImGui::Checkbox("Spawning", &is_enemy_spawning_system_active);
+            ImGui::Indent();
+            ImGui::SliderInt("Span", &enemy_settings.spawn_interval, 1, 5000);
+            if (ImGui::Button("Manual Spawn")) {
+                spawnEnemy();
+            }
+            ImGui::Unindent();
+            ImGui::Checkbox("GUI", &is_gui_system_active);
+            ImGui::Checkbox("Rendering", &is_render_system_active);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Entities")) {
+            ImGui::Text("Entities tab!\nPermet de visualiser toutes les entités du jeu");
+
+            if (ImGui::CollapsingHeader("Entities")) {
+                ImGui::Indent();
+                if (ImGui::CollapsingHeader("bullets")) {
+                    ImGui::Indent();
+                    entity_manager_.forEntitiesMatching<SBullets>(
+                        [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
+                               [[maybe_unused]] CTransform &transform, [[maybe_unused]] CCollision &collision,
+                               [[maybe_unused]] CShape &shape, [[maybe_unused]] CLifespan &lifespan) {
+                            ImGui::PushID(0);
+                            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor(shape.circle.getFillColor()));
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                                this->entity_manager_.kill(entity_index);
+                                entity_manager_.refresh();
+                            }
+                            ImGui::PopStyleColor(1);
+                            ImGui::PopID();
+
+                            ImGui::SameLine();
+                            ImGui::Text("%4lu (%11.6f, %11.6f) %4d/%4d", entity_index.get(), transform.position.x,
+                                        transform.position.y, lifespan.remaining, lifespan.lifespan);
+                        });
+                    ImGui::Unindent();
+                }
+
+                if (ImGui::CollapsingHeader("Enemies")) {
+                    ImGui::Indent();
+                    entity_manager_.forEntitiesMatching<SEnemies>(
+                        [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
+                               [[maybe_unused]] const CTransform &transform,
+                               [[maybe_unused]] const CCollision &collision, [[maybe_unused]] const CShape &shape,
+                               [[maybe_unused]] const CScore &score) {
+                            if (entity_manager_.hasTag<TSmallEnemy>(entity_index)) return;
+
+                            ImGui::PushID(0);
+                            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor(shape.circle.getFillColor()));
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                                this->entity_manager_.kill(entity_index);
+                                entity_manager_.refresh();
+                            }
+                            ImGui::PopStyleColor(1);
+                            ImGui::PopID();
+
+                            ImGui::SameLine();
+                            ImGui::Text("%4lu (%11.6f, %11.6f)", entity_index.get(), transform.position.x,
+                                        transform.position.y);
+                        });
+                    ImGui::Unindent();
+                }
+
+                if (ImGui::CollapsingHeader("Players")) {
+                    ImGui::Indent();
+                    entity_manager_.forEntitiesMatching<SPlayers>(
+                        [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
+                               [[maybe_unused]] const CTransform &transform,
+                               [[maybe_unused]] const CCollision &collision, [[maybe_unused]] const CShape &shape,
+                               [[maybe_unused]] const CInput &input) {
+                            ImGui::PushID(0);
+                            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor(shape.circle.getFillColor()));
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                                this->entity_manager_.kill(entity_index);
+                                entity_manager_.refresh();
+                            }
+                            ImGui::PopStyleColor(1);
+                            ImGui::PopID();
+
+                            ImGui::SameLine();
+                            ImGui::Text("%4lu (%11.6f, %11.6f)", entity_index.get(), transform.position.x,
+                                        transform.position.y);
+                        });
+                    ImGui::Unindent();
+                }
+
+                if (ImGui::CollapsingHeader("Small enemies")) {
+                    ImGui::Indent();
+                    entity_manager_.forEntitiesMatching<SSmallEnemies>(
+                        [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
+                               [[maybe_unused]] const CTransform &transform,
+                               [[maybe_unused]] const CCollision &collision, [[maybe_unused]] const CShape &shape,
+                               [[maybe_unused]] const CScore &score, [[maybe_unused]] const CLifespan &lifespan) {
+                            ImGui::PushID(0);
+                            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor(shape.circle.getFillColor()));
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                                this->entity_manager_.kill(entity_index);
+                                entity_manager_.refresh();
+                            }
+                            ImGui::PopStyleColor(1);
+                            ImGui::PopID();
+
+                            ImGui::SameLine();
+                            ImGui::Text("%4lu (%11.6f, %11.6f) %4d/%4d", entity_index.get(), transform.position.x,
+                                        transform.position.y, lifespan.remaining, lifespan.lifespan);
+                        });
+                    ImGui::Unindent();
+                }
+                ImGui::Unindent();
+            }
+
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+
     ImGui::End();
 
-    // TODO : Just for whatching ImGui possibilities
-    //ImGui::ShowDemoWindow();
+    // Just for whatching ImGui possibilities
+    ImGui::ShowDemoWindow();
 }

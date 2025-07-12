@@ -15,6 +15,7 @@ using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
 using STransform = ecs::Signature<CTransform>;
 using SRendering = ecs::Signature<CTransform, CShape>;
 using SLifespan = ecs::Signature<CLifespan, CShape>;
+using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CCollision, CShape, CScore, CLifespan>;
 
 using GameSignaturesList = ecs::SignatureList<
     SPlayers,
@@ -22,7 +23,8 @@ using GameSignaturesList = ecs::SignatureList<
     SEnemies,
     STransform,
     SRendering,
-    SLifespan
+    SLifespan,
+    SSmallEnemies
 >;
 
 #endif //SIGNATURES_H

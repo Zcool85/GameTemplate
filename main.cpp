@@ -4,15 +4,6 @@
 #include "game/Game.h"
 
 int main(const int argc, char *argv[]) {
-    sf::Vector2f position1{1, 2};
-    sf::Vector2f position2{4, -1};
-    sf::Vector2f sum = position1 + position2;
-    std::cout << "Length : " << sum.length() << std::endl;
-    std::cout << "LengthSquared : " << sum.lengthSquared() << std::endl;
-    std::cout << "x : " << sum.x << std::endl;
-    std::cout << "y : " << sum.y << std::endl;
-
-
     std::string configuration_file_path;
 
     argparse::ArgumentParser program(argv[0], "v1.0");
