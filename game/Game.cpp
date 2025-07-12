@@ -18,12 +18,11 @@ static std::string set_score_text(int score) {
 
 static auto checkCollision(const sf::Vector2f position1, const sf::Vector2f position2, const float radius1,
                            const float radius2) -> bool {
-    const float distanceX = position1.x - position2.x;
-    const float distanceY = position1.y - position2.y;
-    const float distanceSquared = distanceX * distanceX + distanceY * distanceY;
-    const float radiusSquared = radius1 * radius1 + radius2 * radius2;
+    const float radiusSquared = (radius1 + radius2) * (radius1 + radius2);
 
-    return distanceSquared <= radiusSquared;
+    const auto magnitudeSquared = (position2 - position1).lengthSquared();
+
+    return magnitudeSquared <= radiusSquared;
 }
 
 Game::Game(const std::string &configuration_file_path)
@@ -173,8 +172,12 @@ auto Game::spawnPlayer() -> void {
     shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
 }
 
-// TODO : auto Game::spawnBullet(const ecs::EntityIndex player_index, const sf::Vector2f &target) -> void
-auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f velocity) -> void {
+auto Game::spawnBullet(const ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void {
+
+    const auto &player_transform(entity_manager_.getComponent<CTransform>(player_handle));
+
+    const sf::Vector2f direction  = (target - player_transform.position).normalized();
+
     const auto &bullet_settings = configuration_manager_.getBulletSettings();
     const auto bullet_entity_index_ = entity_manager_.createIndex();
 
@@ -187,8 +190,8 @@ auto Game::spawnBullet(const sf::Vector2f initial_position, const sf::Vector2f v
     auto &shape(entity_manager_.addComponent<CShape>(bullet_entity_index_));
     auto &lifespan(entity_manager_.addComponent<CLifespan>(bullet_entity_index_));
 
-    transform.position = initial_position;
-    transform.velocity = velocity * bullet_settings.speed;
+    transform.position = player_transform.position;
+    transform.velocity = direction * bullet_settings.speed;
 
     collision.radius = bullet_settings.collision_radius;
 
@@ -322,8 +325,7 @@ auto Game::sMovement(const sf::Time delta_clock) -> void {
 
     if (input.shoot) {
         input.shoot = false;
-        spawnBullet(transform.position,
-                    (window_.mapPixelToCoords(input.shoot_position) - transform.position).normalized());
+        spawnBullet(player_entity_handle_, window_.mapPixelToCoords(input.shoot_position));
     }
 
     // Toutes les entités doivent tourner
@@ -578,7 +580,6 @@ auto Game::sRender() -> void {
             this->window_.draw(shape.circle);
         });
 
-    // TODO : Render score
     this->window_.draw(score_text_);
 
     ImGui::SFML::Render(this->window_);

@@ -72,7 +72,7 @@ class Game {
     // Fonctions internes
     auto spawnPlayer() -> void;
 
-    auto spawnBullet(sf::Vector2f initial_position, sf::Vector2f velocity) -> void;
+    auto spawnBullet(ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void;
 
     auto spawnSmallEnemies(ecs::EntityIndex enemy) -> void;
 
