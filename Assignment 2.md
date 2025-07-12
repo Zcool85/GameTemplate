@@ -128,8 +128,8 @@ Score :
 
 - [x] À chaque fois qu'un ennemi apparait, il lui ait attribué un score de N*100, où N est le nombre de vertices. Les
   petits ennemis doublent la valeur.
-- [ ] Si le joueur tue un ennemi, le score du jeu est incrémenté du score de l'ennemi tué.
-- [ ] Le score doit être affiché en haut à gauche de l'écran dans la police de caractères spécifiée dans le fichier de
+- [x] Si le joueur tue un ennemi, le score du jeu est incrémenté du score de l'ennemi tué.
+- [x] Le score doit être affiché en haut à gauche de l'écran dans la police de caractères spécifiée dans le fichier de
   configuration.
 
 Dessin :

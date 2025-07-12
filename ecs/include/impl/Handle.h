@@ -9,6 +9,7 @@
 
 namespace ecs::impl {
 
+    // TODO : Ce type de donnée ne DOIT PAS être dans ecs::impl...
     struct Handle
     {
         // TODO : Faire en sorte que le contenu ne puisse pas être visible pour le développeur

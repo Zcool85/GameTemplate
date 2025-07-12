@@ -12,94 +12,9 @@
 #include "tools/ConfigurationManager.h"
 #include "Types.h"
 #include "Ecs.h"
+#include "GameSettings.h"
 
 class Scene;
-
-
-struct CTransform {
-    sf::Vector2f position;
-    sf::Vector2f velocity;
-    sf::Vector2f scale;
-    float angle{};
-};
-
-struct CCollision {
-    float radius;
-};
-
-struct CScore {
-    int score;
-};
-
-struct CShape {
-    sf::CircleShape circle;
-};
-
-struct CLifespan {
-    int lifespan{};
-    int remaining{};
-};
-
-struct CInput {
-    int up{};
-    int down{};
-    int left{};
-    int right{};
-    int shoot{};
-    sf::Vector2i shoot_position{};
-};
-
-using GameComponentsList = ecs::ComponentList<
-    CTransform,
-    CCollision,
-    CScore,
-    CShape,
-    CLifespan,
-    CInput
->;
-
-struct TPlayer {
-};
-
-struct TBullet {
-};
-
-struct TEnemy {
-};
-
-struct TLittleEnemy {
-};
-
-struct TSpawning {
-};
-
-using MyTagList = ecs::TagList<
-    TPlayer,
-    TBullet,
-    TEnemy,
-    TLittleEnemy,
-    TSpawning
->;
-
-using SPlayers = ecs::Signature<TPlayer, CTransform, CCollision, CShape, CInput>;
-using SBullets = ecs::Signature<TBullet, CTransform, CCollision, CShape, CLifespan>;
-using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
-using STransform = ecs::Signature<CTransform>;
-using SRendering = ecs::Signature<CTransform, CShape>;
-using SLifespan = ecs::Signature<CLifespan>;
-using SEnemiesSpawner = ecs::Signature<TSpawning, CLifespan>;
-
-using MySignatureList = ecs::SignatureList<
-    SPlayers,
-    SBullets,
-    SEnemies,
-    STransform,
-    SRendering,
-    SLifespan,
-    SEnemiesSpawner
->;
-
-using MySettings = ecs::Settings<GameComponentsList, MyTagList, MySignatureList>;
 
 /// @brief Classe principale du jeu
 ///
@@ -118,7 +33,7 @@ using MySettings = ecs::Settings<GameComponentsList, MyTagList, MySignatureList>
 /// L'instance de cette classe est passée en paramètre du constructeur
 /// de chaque classe Scene.
 class Game {
-    using EntityManager = ecs::Manager<MySettings>;
+    using EntityManager = ecs::Manager<GameSettings>;
 
     tools::ConfigurationManager configuration_manager_;
     // Pour le moment on se limite à un plan 2D. Donc notre fenêtre sera un sf::RenderWindow et non un sf::Window
@@ -129,35 +44,37 @@ class Game {
     sf::Clock delta_clock_;
     EntityManager entity_manager_;
     ecs::impl::Handle player_entity_handle_{};
+    sf::Font font_;
+    sf::Text score_text_;
     // Seed for random number
     std::random_device random_device_;
 
-    /// @brief Traite les inputs (clavier, souris, joystick...)
-    auto processInput() -> void;
+    int score_;
+    int current_frame_;
+    bool pause_;
 
     /// @brief Mise à jour des données
     auto update() -> void;
 
-    /// @brief Mise à jour du rendu
-    auto render() -> void;
-
-    // Fonctions internes
+    // Fonctions système
     auto sMovement(sf::Time delta_clock) -> void;
-
     auto sUserInput() -> void;
 
-    auto sEnemySpawner() -> void;
-
-    auto sCollision() -> void;
+    auto sLifespan() -> void;
 
     auto sRender() -> void;
 
-    auto sLifespanKiller() -> void;
+    auto sGUI() -> void;
+
+    auto sEnemySpawner() -> void;
+    auto sCollision() -> void;
+
+    // Fonctions internes
+    auto spawnPlayer() -> void;
 
     auto spawnBullet(sf::Vector2f initial_position, sf::Vector2f velocity) -> void;
 
-    auto spawnLittleEnemies(std::size_t number_of_little_enemies, sf::Vector2f initial_position, float initial_angle,
-                            sf::Vector2f velocity, sf::Color color, std::size_t vertices, int enemy_score) -> void;
+    auto spawnSmallEnemies(ecs::EntityIndex enemy) -> void;
 
 public:
     /// @brief Construit une instance du jeu
@@ -168,10 +85,6 @@ public:
     auto run() -> void;
 
     auto window() -> sf::RenderWindow &;
-
-    auto spawnPlayer() -> void;
-
-    auto addEnemySpawner() -> void;
 
     //auto changeScene<T>() -> void;
     //auto getAssets() -> Assets &;
