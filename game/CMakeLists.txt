@@ -1,8 +1,10 @@
 add_library(GameLib STATIC
-        Game.cpp
+        GameEngine.cpp
         tools/ConfigurationManager.cpp
         scenes/Scene.cpp
         scenes/MainMenuScene.cpp
+        scenes/GameScene.cpp
+        scenes/GameScene.h
 )
 
 # Local includes

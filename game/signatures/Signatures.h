@@ -9,13 +9,13 @@
 #include "components/Components.h"
 #include "tags/Tags.h"
 
-using SPlayers = ecs::Signature<TPlayer, CTransform, CCollision, CShape, CInput>;
+using SPlayers = ecs::Signature<TPlayer, CTransform, CShape>;
 using SBullets = ecs::Signature<TBullet, CTransform, CCollision, CShape, CLifespan>;
 using SEnemies = ecs::Signature<TEnemy, CTransform, CCollision, CShape, CScore>;
 using STransform = ecs::Signature<CTransform>;
 using SRendering = ecs::Signature<CTransform, CShape>;
 using SLifespan = ecs::Signature<CLifespan, CShape>;
-using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CCollision, CShape, CScore, CLifespan>;
+using SSmallEnemies = ecs::Signature<TSmallEnemy, CTransform, CShape, CLifespan>;
 
 using GameSignaturesList = ecs::SignatureList<
     SPlayers,

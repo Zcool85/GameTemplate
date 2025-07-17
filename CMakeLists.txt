@@ -42,8 +42,13 @@ elseif (MSVC)
     add_compile_options("/Wall")
 endif ()
 
+# TODO : Voir quoi garder
 if (APPLE)
     add_compile_definitions(GL_SILENCE_DEPRECATION)
+endif ()
+if (APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
+    find_package(OpenGL REQUIRED)
 endif ()
 
 # Generate file "${CMAKE_BINARY_DIR}/compile_commands.json"
@@ -125,6 +130,9 @@ target_link_libraries(${PROJECT_NAME}
         GameLib
         SFML::Graphics SFML::Audio SFML::System SFML::Window SFML::Network
         ImGui-SFML::ImGui-SFML
+        # TODO : Voir si à garder...
+        ${OPENGL_LIBRARIES}
+        "-framework OpenGL"
 )
 
 # Copy config directory to output directory
@@ -144,6 +152,15 @@ add_custom_target(copy-assets ALL
 )
 # Add copy-file target to this project dependencies
 add_dependencies(${PROJECT_NAME} copy-assets)
+
+# Copy data directory to output directory
+add_custom_target(copy-data ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/data
+        ${CMAKE_CURRENT_BINARY_DIR}/data
+)
+# Add copy-file target to this project dependencies
+add_dependencies(${PROJECT_NAME} copy-data)
 
 message(STATUS "Compilateur: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "Architecture: ${CMAKE_SYSTEM_PROCESSOR}")

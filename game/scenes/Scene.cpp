@@ -4,10 +4,14 @@
 
 #include "Scene.h"
 
-Scene::Scene(Game &game)
-    : game_(game), frame_(0), paused_(false) {
+Scene::Scene(GameEngine &game)
+    : game_{game}, current_frame_{0}, paused_{false}, ended_{false} {
 }
 
-auto Scene::registerAction(const sf::Keyboard::Key inputKey, const ActionNameId action) -> void {
-    action_map_[inputKey] = action;
+auto Scene::hasEnded() const -> bool {
+    return ended_;
 }
+
+// auto Scene::registerAction(const sf::Keyboard::Key inputKey, const ActionNameId action) -> void {
+//     action_map_[inputKey] = action;
+// }

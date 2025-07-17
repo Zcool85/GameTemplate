@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <argparse/argparse.hpp>
 
-#include "game/Game.h"
+#include "game/GameEngine.h"
 
 int main(const int argc, char *argv[]) {
     std::string configuration_file_path;
@@ -29,7 +29,7 @@ int main(const int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    Game game(configuration_file_path);
+    GameEngine game(configuration_file_path);
 
     game.run();
 

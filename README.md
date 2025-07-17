@@ -93,6 +93,45 @@ https://www.youtube.com/watch?v=PlVXuqQ-540&list=PL6xSOsbVA1ebkU66okpi-KViAO8_9D
 
 https://www.sfml-dev.org/documentation/3.0.1/classsf_1_1Sprite.html
 
+### Autre solution : Compiler aseprite
+
+Cloner le projet :
+
+```bash
+git clone git@github.com:aseprite/aseprite.git
+cd aseprite
+```
+
+Récupérer le dernier tag :
+
+```bash
+git checkout v1.3.14
+```
+
+Ajouter les outils nécessaires (cmake & ninja) :
+
+```bash
+export PATH=$PATH:/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin
+export PATH=$PATH:/Applications/CLion.app/Contents/bin/ninja/mac/aarch64
+```
+
+Récupérer les sous-modules :
+
+```bash
+git submodule update --init --recursive
+```
+
+Lancer le build :
+
+```bash
+./build.sh
+```
+
+Une fois la compilation terminée, l'outil se lance comme suit :
+
+```bash
+./build/bin/aseprite
+```
 
 ## Level supérieur
 

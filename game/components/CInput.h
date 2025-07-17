@@ -5,13 +5,14 @@
 #ifndef CINPUT_H
 #define CINPUT_H
 
+#include <SFML/Graphics.hpp>
+
 struct CInput {
     int up{};
     int down{};
     int left{};
     int right{};
     int shoot{};
-    // TODO : PEut-on se passer de cette variable ???
     sf::Vector2i shoot_position{};
 };
 

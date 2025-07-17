@@ -12,7 +12,12 @@ classDiagram
             +[[nodiscard]] auto Save() const -> bool;
         }
         class GraphicsSettings {
+            +int depth_bits = 24
+            +int stencil_bits = 8
             +int anti_aliasing_level = 0
+            +int major_version = 2
+            +int minor_version = 1
+            +int attribute_flags = 0
             +int framerate_limit = 60
             +bool vertical_sync_enabled = false
         }
@@ -22,8 +27,60 @@ classDiagram
             +int width = 800
             +int height = 600
         }
+        class BulletSettings {
+            +float shape_radius = 5.f
+            +float collision_radius = 5.f
+            +float speed = 5.f
+            +int fill_color_r = 255
+            +int fill_color_g = 255
+            +int fill_color_b = 255
+            +int outline_color_r = 255
+            +int outline_color_g = 255
+            +int outline_color_b = 255
+            +float outline_thickness = 2.f
+            +int shape_vertices = 8
+            +int lifespan = 50
+        }
+        class EnemySettings {
+            +float shape_radius = 32.f
+            +float collision_radius = 32.f
+            +float min_speed = 5.f
+            +float max_speed = 15.f
+            +int outline_color_r = 255
+            +int outline_color_g = 255
+            +int outline_color_b = 255
+            +float outline_thickness = 2.f
+            +int min_vertices = 3
+            +int max_vertices = 7
+            +int small_lifespan = 7
+            +int spawn_interval = 7
+        }
+        class FontSettings {
+            std:: string file
+            int size = 12
+            int color_r = 200
+            int color_g = 200
+            int color_b = 200
+        }
+        class PlayerSettings {
+            float shape_radius = 32.f
+            float collision_radius = 32.f
+            float speed = 5.f
+            int fill_color_r = 255
+            int fill_color_g = 255
+            int fill_color_b = 255
+            int outline_color_r = 255
+            int outline_color_g = 255
+            int outline_color_b = 255
+            float outline_thickness = 2.f
+            int shape_vertices = 8
+        }
     }
 
     ConfigurationManager "1" *-- GraphicsSettings
     ConfigurationManager "1" *-- WindowSettings
+    ConfigurationManager "1" *-- BulletSettings
+    ConfigurationManager "1" *-- EnemySettings
+    ConfigurationManager "1" *-- FontSettings
+    ConfigurationManager "1" *-- PlayerSettings
 

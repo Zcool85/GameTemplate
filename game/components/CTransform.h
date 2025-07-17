@@ -5,6 +5,8 @@
 #ifndef CTRANSFORM_H
 #define CTRANSFORM_H
 
+#include <SFML/Graphics.hpp>
+
 struct CTransform {
     sf::Vector2f position;
     sf::Vector2f velocity;

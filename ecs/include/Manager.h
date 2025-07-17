@@ -5,6 +5,7 @@
 #ifndef ECS_MANAGER_H
 #define ECS_MANAGER_H
 
+#include <iostream>
 #include <cassert>
 
 #include "impl/ComponentStorage.h"

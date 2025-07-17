@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 12/07/2025.
 //
 
-#ifndef GAMESETTINGS_H
-#define GAMESETTINGS_H
+#ifndef GAME_SETTINGS_H
+#define GAME_SETTINGS_H
 
 #include "EcsTypes.h"
 #include "components/Components.h"
@@ -12,4 +12,4 @@
 
 using GameSettings = ecs::Settings<GameComponentsList, GameTagsList, GameSignaturesList>;
 
-#endif //GAMESETTINGS_H
+#endif //GAME_SETTINGS_H
