@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 08/07/2025.
 //
 
-#ifndef BULLETSETTINGS_H
-#define BULLETSETTINGS_H
+#ifndef BULLET_SETTINGS_H
+#define BULLET_SETTINGS_H
 
 namespace tools {
     struct BulletSettings {
@@ -22,4 +22,4 @@ namespace tools {
     };
 }
 
-#endif //BULLETSETTINGS_H
+#endif //BULLET_SETTINGS_H

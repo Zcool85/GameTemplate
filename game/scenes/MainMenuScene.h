@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 22/06/2025.
 //
 
-#ifndef MAINMENUSCENE_H
-#define MAINMENUSCENE_H
+#ifndef MAIN_MENU_SCENE_H
+#define MAIN_MENU_SCENE_H
 
 #include "Scene.h"
 
@@ -29,4 +29,4 @@ public:
 
 
 
-#endif //MAINMENUSCENE_H
+#endif //MAIN_MENU_SCENE_H

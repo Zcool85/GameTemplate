@@ -4,7 +4,8 @@ add_library(GameLib STATIC
         scenes/Scene.cpp
         scenes/MainMenuScene.cpp
         scenes/GameScene.cpp
-        scenes/GameScene.h
+        Assets.cpp
+        physics/Physics.cpp
 )
 
 # Local includes

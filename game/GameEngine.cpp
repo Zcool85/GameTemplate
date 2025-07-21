@@ -6,15 +6,13 @@
 #include <imgui-SFML.h>
 
 #include "GameEngine.h"
-
-#include <ranges>
-
-#include "imgui.h"
 #include "scenes/GameScene.h"
 #include "scenes/MainMenuScene.h"
 
-GameEngine::GameEngine(const std::string &configuration_file_path)
-    : running_(false), configuration_manager_(configuration_file_path) {
+GameEngine::GameEngine(const std::string &configuration_file_path, const std::string &assets_configuration_file_path)
+    : running_(false),
+      configuration_manager_(configuration_file_path, assets_configuration_file_path),
+      assets_(configuration_manager_) {
     auto &[title, fullscreen, width, height] = configuration_manager_.getWindowSettings();
     auto &[depth_bits, stencil_bits, anti_aliasing_level, major_version, minor_version, attribute_flags, framerate_limit
         , vertical_sync_enabled] = configuration_manager_.getGraphicsSettings();
@@ -54,12 +52,12 @@ GameEngine::GameEngine(const std::string &configuration_file_path)
                                          });
     }
 
-    std::cout << "Window created" << std::endl;
-    if (sf::Vulkan::isAvailable()) {
-        std::cout << "Vulkan available" << std::endl;
-    } else {
-        std::cout << "Vulkan not available" << std::endl;
-    }
+    // std::cout << "Window created" << std::endl;
+    // if (sf::Vulkan::isAvailable()) {
+    //     std::cout << "Vulkan available" << std::endl;
+    // } else {
+    //     std::cout << "Vulkan not available" << std::endl;
+    // }
 
     if (vertical_sync_enabled) {
         this->window_.setVerticalSyncEnabled(vertical_sync_enabled);
@@ -148,6 +146,10 @@ auto GameEngine::windowSize() const -> sf::Vector2f {
         static_cast<float>(this->window_.getSize().x),
         static_cast<float>(this->window_.getSize().y)
     };
+}
+
+auto GameEngine::getAssets() -> Assets & {
+    return this->assets_;
 }
 
 auto GameEngine::render() -> void {

@@ -2,6 +2,9 @@
 
 ## TODO
 
+- [ ] Ajouter des cœurs de vie
+- [ ] Tester les shaders
+- [ ] Passer à SDL 3 & Vulkan
 - [ ] Organiser les classes
 - [ ] Créer la documentation du code
 - [ ] Faire le rendu dans un thread
@@ -82,11 +85,9 @@ Cf. [Tutorial](https://edw.is/using-cmake/).
 
 Cf. [YouTube](https://www.youtube.com/playlist?list=PL6xSOsbVA1ebkU66okpi-KViAO8_9DJKg).
 
-
 ## Création des sprites
 
 J'utilise cet outil [en ligne](https://www.piskelapp.com/p/create/sprite/)
-
 
 Là où j'en suis :
 https://www.youtube.com/watch?v=PlVXuqQ-540&list=PL6xSOsbVA1ebkU66okpi-KViAO8_9DJKg&index=54
@@ -141,7 +142,8 @@ Une fois que je me serais familiarisé avec la série YouTube, il faudra voir :
 
 2) Puis cet [article](https://austinmorlan.com/posts/entity_component_system/)
 
-3) vraie [implémentation](https://github.com/CppCon/CppCon2015/blob/master/Tutorials/Implementation%20of%20a%20component-based%20entity%20system%20in%20modern%20C%2B%2B/Source%20Code/p7.cpp)
+3)
+vraie [implémentation](https://github.com/CppCon/CppCon2015/blob/master/Tutorials/Implementation%20of%20a%20component-based%20entity%20system%20in%20modern%20C%2B%2B/Source%20Code/p7.cpp)
 
 ## Tips and Tricks
 

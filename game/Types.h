@@ -5,6 +5,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <cassert>
+
 // Source: https://gist.github.com/Lee-R/3839813
 constexpr auto fnv1a_32(char const *s, const std::size_t count) -> std::size_t { // NOLINT(*-no-recursion)
     return count ? (fnv1a_32(s, count - 1) ^ static_cast<std::size_t>(s[count - 1])) * 16777619u : 2166136261u;
@@ -26,6 +28,11 @@ public:
         : value_(fnv1a_32(str, N - 1)) {
         static_assert(N > 1, "String cannot be empty");
         static_assert(N <= 64, "String too long for identifier");
+    }
+    constexpr explicit strong_id(const std::string &str)
+        : value_(fnv1a_32(str.c_str(), str.length())) {
+        assert(str.length() > 1);
+        assert(str.length() <= 64);
     }
 
     constexpr strong_id() : value_(0) {
@@ -72,6 +79,15 @@ struct std::hash<strong_id<TTag> > {
 struct SceneTag {
 };
 
+struct FontTag {
+};
+
+struct TextureTag {
+};
+
+struct AssetTag {
+};
+
 struct ActionNameTag {
 };
 
@@ -79,11 +95,21 @@ struct ActionTypeTag {
 };
 
 using SceneId = strong_id<SceneTag>;
+using FontId = strong_id<FontTag>;
+using TextureId = strong_id<TextureTag>;
 using ActionNameId = strong_id<ActionNameTag>;
 using ActionTypeId = strong_id<ActionTypeTag>;
 
 constexpr SceneId operator""_scene(const char *s, const std::size_t count) {
     return SceneId(fnv1a_32(s, count));
+}
+
+constexpr FontId operator""_font(const char *s, const std::size_t count) {
+    return FontId(fnv1a_32(s, count));
+}
+
+constexpr TextureId operator""_texture(const char *s, const std::size_t count) {
+    return TextureId(fnv1a_32(s, count));
 }
 
 constexpr ActionNameId operator""_action_name(const char *s, const std::size_t count) {
@@ -96,10 +122,14 @@ constexpr ActionTypeId operator""_action_type(const char *s, const std::size_t c
 
 
 constexpr void compile_time_test() {
+    const std::string toto = "toto";
     SceneId test{"toto"};
+    SceneId test2{toto};
     auto id0{"Wazzaa"_scene};
     auto id1{"toto"_action_name};
     auto id3{"toto"_action_name};
+
+    assert(test.value() == test2.value());
 
     static_assert(std::is_same_v<decltype(test), decltype(id0)>);
     static_assert(!std::is_same_v<decltype(test), decltype(id1)>);

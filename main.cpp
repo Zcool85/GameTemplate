@@ -5,6 +5,7 @@
 
 int main(const int argc, char *argv[]) {
     std::string configuration_file_path;
+    std::string assets_configuration_file_path;
 
     argparse::ArgumentParser program(argv[0], "v1.0");
 
@@ -12,6 +13,11 @@ int main(const int argc, char *argv[]) {
             .help("path to configuration file")
             .default_value("config/game.conf")
             .store_into(configuration_file_path);
+
+    program.add_argument("-a", "--assets-configuration-file")
+            .help("path to assets configuration file")
+            .default_value("config/assets.conf")
+            .store_into(assets_configuration_file_path);
 
     program.add_description("Run the game.");
     program.add_epilog("Made by Zéro Cool & Merlou.");
@@ -29,7 +35,12 @@ int main(const int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    GameEngine game(configuration_file_path);
+    if (!std::filesystem::exists(assets_configuration_file_path)) {
+        std::cerr << "Assets configuration file \"" << assets_configuration_file_path << "\" don't exists !" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    GameEngine game(configuration_file_path, assets_configuration_file_path);
 
     game.run();
 

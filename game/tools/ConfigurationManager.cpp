@@ -8,9 +8,10 @@ namespace tools {
     /**
      * Class de gestion des configurations
      * @param file_path Chemin vers le fichier de configuration à utiliser
+     * @param assets_file_path Chemin vers le fichier de configuration des assets
      */
-    ConfigurationManager::ConfigurationManager(const std::string &file_path)
-        : file_path_(file_path) {
+    ConfigurationManager::ConfigurationManager(const std::string &file_path, const std::string &assets_file_path)
+        : file_path_(file_path), assets_file_path_(assets_file_path) {
         configuration_.setOptions(libconfig::Config::OptionFsync
                                   | libconfig::Config::OptionSemicolonSeparators
                                   | libconfig::Config::OptionColonAssignmentForGroups
@@ -42,7 +43,6 @@ namespace tools {
         configuration_.lookupValue("graphics.vertical_sync_enabled", graphics_settings_.vertical_sync_enabled);
 
         // TODO : Code saving values
-        configuration_.lookupValue("font.file", font_settings_.file);
         configuration_.lookupValue("font.size", font_settings_.size);
         configuration_.lookupValue("font.color.r", font_settings_.color_r);
         configuration_.lookupValue("font.color.g", font_settings_.color_g);
@@ -88,6 +88,39 @@ namespace tools {
         configuration_.lookupValue("bullet.outline_thickness", bullet_settings_.outline_thickness);
         configuration_.lookupValue("bullet.shape_vertices", bullet_settings_.shape_vertices);
         configuration_.lookupValue("bullet.lifespan", bullet_settings_.lifespan);
+
+        // TODO : Faire mieux... Je duplique dans tous les sens...
+        assets_configuration_.setOptions(libconfig::Config::OptionFsync
+                                  | libconfig::Config::OptionSemicolonSeparators
+                                  | libconfig::Config::OptionColonAssignmentForGroups
+                                  | libconfig::Config::OptionOpenBraceOnSeparateLine);
+
+        try {
+            assets_configuration_.readFile(assets_file_path);
+        } catch (const libconfig::FileIOException &file_io_exception) {
+            std::cerr << "I/O error while reading file : " << file_io_exception.what() << std::endl;
+        }
+        catch (const libconfig::ParseException &parse_exception) {
+            std::cerr << "Parse error at " << parse_exception.getFile() << ":" << parse_exception.getLine()
+                    << " - " << parse_exception.getError() << std::endl;
+            throw;
+        }
+
+        for (const auto& asset: assets_configuration_.lookup("fonts")) {
+            AssetSettings asset_settings;
+            asset.lookupValue("key", asset_settings.key);
+            asset.lookupValue("file", asset_settings.file);
+
+            asset_settings_.fonts_settings[FontId{asset_settings.key}] = asset_settings;
+        }
+
+        for (const auto& asset: assets_configuration_.lookup("textures")) {
+            AssetSettings asset_settings;
+            asset.lookupValue("key", asset_settings.key);
+            asset.lookupValue("file", asset_settings.file);
+
+            asset_settings_.textures_settings[TextureId{asset_settings.key}] = asset_settings;
+        }
     }
 
     auto ConfigurationManager::getWindowSettings() -> WindowSettings & {
@@ -112,6 +145,10 @@ namespace tools {
 
     auto ConfigurationManager::getBulletSettings() -> BulletSettings & {
         return bullet_settings_;
+    }
+
+    auto ConfigurationManager::getAssetsSettings() -> AssetsSettings & {
+        return asset_settings_;
     }
 
     auto ConfigurationManager::Save() const -> bool {

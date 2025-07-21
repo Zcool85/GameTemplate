@@ -9,28 +9,20 @@
 
 #include "imgui.h"
 #include "GameScene.h"
+
+#include "physics/Physics.h"
 #include "scenes/MainMenuScene.h"
 
 static std::string set_score_text(int score) {
     return std::format("Score: {}", score);
 }
 
-static auto checkCollision(const sf::Vector2f position1, const sf::Vector2f position2, const float radius1,
-                           const float radius2) -> bool {
-    const float radiusSquared = (radius1 + radius2) * (radius1 + radius2);
-
-    const auto magnitudeSquared = (position2 - position1).lengthSquared();
-
-    return magnitudeSquared <= radiusSquared;
-}
-
 GameScene::GameScene(GameEngine &game)
-    : Scene(game), score_text_{font_} {
+    : Scene(game), score_text_(game.getAssets().getFont("DEFAULT"_font)), health_{5} {
     const auto &font_settings = game_.configurationManager().getFontSettings();
 
-    font_ = sf::Font(std::filesystem::path{font_settings.file});
     score_ = 0;
-    score_text_ = sf::Text{font_, set_score_text(score_), static_cast<unsigned>(font_settings.size)};
+    score_text_ = sf::Text{game.getAssets().getFont("DEFAULT"_font), set_score_text(score_), static_cast<unsigned>(font_settings.size)};
     score_text_.setFillColor({
         static_cast<std::uint8_t>(font_settings.color_r),
         static_cast<std::uint8_t>(font_settings.color_g),
@@ -259,7 +251,7 @@ auto GameScene::sMovement(const sf::Time delta_clock) -> void {
         spawnBullet(player_entity_handle_, game_.mapPixelToCoords(input.shoot_position));
     }
 
-    // On calcul les déplacements/mouvements des entités
+    // On calcule les déplacements/mouvements des entités
     entity_manager_.forEntitiesMatching<STransform>(
         [delta_clock](
     [[maybe_unused]] const ecs::EntityIndex entity_index,
@@ -390,7 +382,7 @@ auto GameScene::sCollision() -> void {
             [[maybe_unused]] const CLifespan &bullet_lifespan
         ) {
                     if (!entity_manager_.isAlive(bullet_entity_index)) return;
-                    if (checkCollision(enemy_transform.position, bullet_transform.position,
+                    if (Physics::isCollision(enemy_transform.position, bullet_transform.position,
                                        enemy_collision.radius, bullet_collision.radius)) {
                         score_ += enemy_score.score;
 
@@ -406,13 +398,20 @@ auto GameScene::sCollision() -> void {
 
             if (!entity_manager_.isAlive(player_entity_handle_)) return;
 
-            if (checkCollision(enemy_transform.position, player_transform.position, enemy_collision.radius,
+            if (Physics::isCollision(enemy_transform.position, player_transform.position, enemy_collision.radius,
                                player_collision.radius)) {
                 if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index)) {
                     spawnSmallEnemies(enemy_entity_index);
                 }
                 entity_manager_.kill(enemy_entity_index);
                 entity_manager_.kill(player_entity_handle_);
+
+                health_ -= 1;
+                if (health_ <= 0) {
+                    // TODO : GAME OVER
+                    //game_.changeScene("GAME_OVER"_scene);
+                    health_ = 5;
+                }
 
                 spawnPlayer();
             }
@@ -467,7 +466,7 @@ auto GameScene::render(sf::RenderTarget &render_target) -> void {
 
     if (is_render_system_active) {
         entity_manager_.forEntitiesMatching<SRendering>(
-            [&render_target]([[maybe_unused]] const ecs::EntityIndex entity_index, CTransform &transform,
+            [&render_target]([[maybe_unused]] const ecs::EntityIndex entity_index, const CTransform &transform,
                              CShape &shape) {
                 shape.circle.setPosition(transform.position);
                 shape.circle.setRotation(sf::degrees(transform.angle));
@@ -477,6 +476,14 @@ auto GameScene::render(sf::RenderTarget &render_target) -> void {
                 render_target.draw(shape.circle);
             });
 
+        // Render hearts
+        auto heart = sf::Sprite(game_.getAssets().getTexture("HEART"_texture)); // TODO : On peut faire bien mieux...
+        for (auto i = 0; i < health_; i++) {
+            heart.setPosition({50.f * i, 0.f});
+            render_target.draw(heart);
+        }
+
+        score_text_.setPosition({0, 50});
         score_text_.setString(set_score_text(score_));
 
         render_target.draw(score_text_);
@@ -491,6 +498,7 @@ auto GameScene::sGUI() -> void {
     auto &enemy_settings = game_.configurationManager().getEnemySettings();
 
     ImGui::Begin("Geometry Wars");
+    ImGui::Text("Nombre d'entités : %lu", entity_manager_.getEntityCount());
 
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("GeometryWarsTabBar", tab_bar_flags)) {
@@ -519,10 +527,10 @@ auto GameScene::sGUI() -> void {
                     ImGui::Indent();
                     entity_manager_.forEntitiesMatching<SBullets>(
                         [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
-                               [[maybe_unused]] CTransform &transform, [[maybe_unused]] CCollision &collision,
-                               [[maybe_unused]] CShape &shape, [[maybe_unused]] CLifespan &lifespan) {
+                               [[maybe_unused]] const CTransform &transform, [[maybe_unused]] CCollision &collision,
+                               [[maybe_unused]] const CShape &shape, [[maybe_unused]] const CLifespan &lifespan) {
                             ImGui::PushID(0);
-                            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor(shape.circle.getFillColor()));
+                            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
                             if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
                                 this->entity_manager_.kill(entity_index);
                                 entity_manager_.refresh();
@@ -620,6 +628,6 @@ auto GameScene::sGUI() -> void {
 
     ImGui::End();
 
-    // Just for whatching ImGui possibilities
+    // Just for watching ImGui possibilities
     //ImGui::ShowDemoWindow();
 }

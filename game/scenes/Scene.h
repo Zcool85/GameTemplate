@@ -40,6 +40,8 @@ public:
 
     virtual auto update(const sf::Time &delta_time, sf::RenderWindow &render_window) -> void = 0;
 
+    // TODO : On devrait avoir une fonction void doAction(action) = 0
+
     virtual auto render(sf::RenderTarget &render_target) -> void = 0;
 
     [[nodiscard]] auto hasEnded() const -> bool;

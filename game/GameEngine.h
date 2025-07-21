@@ -7,6 +7,7 @@
 #include <map>
 #include <SFML/Graphics.hpp>
 
+#include "Assets.h"
 #include "scenes/Scene.h"
 #include "tools/ConfigurationManager.h"
 #include "Types.h"
@@ -37,15 +38,18 @@ class GameEngine {
     bool running_;
     tools::ConfigurationManager configuration_manager_;
     sf::Clock delta_clock_;
+    Assets assets_;
 
     auto update() -> void;
 
     auto render() -> void;
 
+    // TODO : sUserInput devrait se trouver ici...
 public:
     /// @brief Construit une instance du jeu
     /// @param configuration_file_path Chemin d'accès au fichier de configuration du jeu
-    explicit GameEngine(const std::string &configuration_file_path);
+    /// @param assets_configuration_file_path Chemin d'accès au fichier de configuration des assets
+    explicit GameEngine(const std::string &configuration_file_path, const std::string &assets_configuration_file_path);
 
     /// @brief Fonction principale du jeu
     auto run() -> void;
@@ -57,6 +61,8 @@ public:
     auto mapPixelToCoords(sf::Vector2i point) const -> sf::Vector2f;
 
     auto windowSize() const -> sf::Vector2f;
+
+    auto getAssets() -> Assets &;
 };
 
 #endif //GAME_ENGINE_H

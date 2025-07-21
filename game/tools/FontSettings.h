@@ -2,13 +2,11 @@
 // Created by Zéro Cool on 08/07/2025.
 //
 
-#ifndef FONTSETTINGS_H
-#define FONTSETTINGS_H
-#include <string>
+#ifndef FONT_SETTINGS_H
+#define FONT_SETTINGS_H
 
 namespace tools {
     struct FontSettings {
-        std::string file;
         int size = 12;
         int color_r = 200;
         int color_g = 200;
@@ -16,4 +14,4 @@ namespace tools {
     };
 } // tools
 
-#endif //FONTSETTINGS_H
+#endif //FONT_SETTINGS_H
