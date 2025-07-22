@@ -91,9 +91,9 @@ namespace tools {
 
         // TODO : Faire mieux... Je duplique dans tous les sens...
         assets_configuration_.setOptions(libconfig::Config::OptionFsync
-                                  | libconfig::Config::OptionSemicolonSeparators
-                                  | libconfig::Config::OptionColonAssignmentForGroups
-                                  | libconfig::Config::OptionOpenBraceOnSeparateLine);
+                                         | libconfig::Config::OptionSemicolonSeparators
+                                         | libconfig::Config::OptionColonAssignmentForGroups
+                                         | libconfig::Config::OptionOpenBraceOnSeparateLine);
 
         try {
             assets_configuration_.readFile(assets_file_path);
@@ -106,7 +106,7 @@ namespace tools {
             throw;
         }
 
-        for (const auto& asset: assets_configuration_.lookup("fonts")) {
+        for (const auto &asset: assets_configuration_.lookup("fonts")) {
             AssetSettings asset_settings;
             asset.lookupValue("key", asset_settings.key);
             asset.lookupValue("file", asset_settings.file);
@@ -114,12 +114,20 @@ namespace tools {
             asset_settings_.fonts_settings[FontId{asset_settings.key}] = asset_settings;
         }
 
-        for (const auto& asset: assets_configuration_.lookup("textures")) {
+        for (const auto &asset: assets_configuration_.lookup("textures")) {
             AssetSettings asset_settings;
             asset.lookupValue("key", asset_settings.key);
             asset.lookupValue("file", asset_settings.file);
 
             asset_settings_.textures_settings[TextureId{asset_settings.key}] = asset_settings;
+        }
+
+        for (const auto &asset: assets_configuration_.lookup("sounds")) {
+            AssetSettings asset_settings;
+            asset.lookupValue("key", asset_settings.key);
+            asset.lookupValue("file", asset_settings.file);
+
+            asset_settings_.sounds_settings[SoundId{asset_settings.key}] = asset_settings;
         }
     }
 
@@ -163,15 +171,15 @@ namespace tools {
             setValue(window_settings, "height", window_settings_.height, libconfig::Setting::TypeInt);
 
             setValue(graphics_settings, "depth_bits", graphics_settings_.depth_bits,
-                                 libconfig::Setting::TypeInt);
+                     libconfig::Setting::TypeInt);
             setValue(graphics_settings, "stencil_bits", graphics_settings_.stencil_bits,
-                                 libconfig::Setting::TypeInt);
+                     libconfig::Setting::TypeInt);
             setValue(graphics_settings, "anti_aliasing_level", graphics_settings_.anti_aliasing_level,
-            libconfig::Setting::TypeInt);
+                     libconfig::Setting::TypeInt);
             setValue(graphics_settings, "major_version", graphics_settings_.major_version,
-            libconfig::Setting::TypeInt);
+                     libconfig::Setting::TypeInt);
             setValue(graphics_settings, "minor_version", graphics_settings_.minor_version,
-            libconfig::Setting::TypeInt);
+                     libconfig::Setting::TypeInt);
             setValue(graphics_settings, "attribute_flags", graphics_settings_.attribute_flags,
                      libconfig::Setting::TypeInt);
             setValue(graphics_settings, "framerate_limit", graphics_settings_.framerate_limit,
