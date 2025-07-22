@@ -134,6 +134,10 @@ Une fois la compilation terminée, l'outil se lance comme suit :
 ./build/bin/aseprite
 ```
 
+## Sound effects
+
+[mixkit](https://mixkit.co/free-sound-effects/game/).
+
 ## Vulkan
 
 Cf. [C++ Headers](https://github.com/KhronosGroup/Vulkan-Hpp).

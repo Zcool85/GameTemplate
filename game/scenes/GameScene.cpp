@@ -12,7 +12,13 @@ static std::string set_score_text(int score) {
 }
 
 GameScene::GameScene(GameEngine &game)
-    : Scene(game), score_text_(game.getAssets().getFont("DEFAULT"_font)), health_{5} {
+    : Scene(game), score_text_(game.getAssets().getFont("DEFAULT"_font)),
+      shoot_sound_{game_.getAssets().getSound("SHOOT_BULLET"_sound)},
+      death_sound_{game_.getAssets().getSound("DEATH"_sound)},
+      game_over_sound_{game_.getAssets().getSound("GAME_OVER"_sound)},
+      kill_enemy_sound_{game_.getAssets().getSound("KILL_ENEMY"_sound)},
+      spawn_enemy_sound_{game_.getAssets().getSound("SWEEP"_sound)},
+      health_{5} {
     const auto &font_settings = game_.configurationManager().getFontSettings();
 
     score_ = 0;
@@ -245,6 +251,7 @@ auto GameScene::sMovement(const sf::Time delta_clock) -> void {
     if (input.shoot) {
         input.shoot = false;
         spawnBullet(player_entity_handle_, game_.mapPixelToCoords(input.shoot_position));
+        shoot_sound_.play();
     }
 
     // On calcule les déplacements/mouvements des entités
@@ -329,6 +336,7 @@ auto GameScene::sEnemySpawner() -> void {
 
     if (current_frame_ % enemy_settings.spawn_interval == 0) {
         spawnEnemy();
+        spawn_enemy_sound_.play();
     }
 }
 
@@ -387,6 +395,7 @@ auto GameScene::sCollision() -> void {
                         }
                         entity_manager_.kill(enemy_entity_index);
                         entity_manager_.kill(bullet_entity_index);
+                        kill_enemy_sound_.play();
                     }
                 });
 
@@ -404,9 +413,12 @@ auto GameScene::sCollision() -> void {
 
                 health_ -= 1;
                 if (health_ <= 0) {
+                    game_over_sound_.play();
                     // TODO : GAME OVER
                     //game_.changeScene("GAME_OVER"_scene);
                     health_ = 5;
+                } else {
+                    death_sound_.play();
                 }
 
                 spawnPlayer();

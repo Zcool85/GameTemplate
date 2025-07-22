@@ -15,6 +15,11 @@ class GameScene final
     sf::Text score_text_;
     // Seed for random number
     std::random_device random_device_;
+    sf::Sound shoot_sound_;
+    sf::Sound death_sound_;
+    sf::Sound game_over_sound_;
+    sf::Sound kill_enemy_sound_;
+    sf::Sound spawn_enemy_sound_;
 
     int score_;
     int health_;

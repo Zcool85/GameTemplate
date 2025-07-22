@@ -5,9 +5,10 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <SFML/System.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
-#include <SFML/System/Vector2.hpp>
+#include <SFML/Audio.hpp>
 
 #include <imgui.h>
 #include <imgui-SFML.h>
