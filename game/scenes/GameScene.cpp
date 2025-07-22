@@ -18,6 +18,7 @@ GameScene::GameScene(GameEngine &game)
       game_over_sound_{game_.getAssets().getSound("GAME_OVER"_sound)},
       kill_enemy_sound_{game_.getAssets().getSound("KILL_ENEMY"_sound)},
       spawn_enemy_sound_{game_.getAssets().getSound("SWEEP"_sound)},
+      game_loop_sound_{game_.getAssets().getSound("GAME_LOOP"_sound)},
       health_{5} {
     const auto &font_settings = game_.configurationManager().getFontSettings();
 
@@ -36,6 +37,9 @@ GameScene::GameScene(GameEngine &game)
     spawnPlayer();
 
     entity_manager_.refresh();
+
+    game_loop_sound_.setLooping(true);
+    game_loop_sound_.play();
 }
 
 auto GameScene::spawnPlayer() -> void {
@@ -273,6 +277,7 @@ auto GameScene::sUserInput(sf::Window &window) -> void {
         [&](const sf::Event::Closed &closed) {
             ImGui::SFML::ProcessEvent(window, closed);
             ended_ = true;
+            game_loop_sound_.stop();
         },
         [&](const sf::Event::MouseButtonPressed &mouse_button_pressed) {
             ImGui::SFML::ProcessEvent(window, mouse_button_pressed);
@@ -336,7 +341,8 @@ auto GameScene::sEnemySpawner() -> void {
 
     if (current_frame_ % enemy_settings.spawn_interval == 0) {
         spawnEnemy();
-        spawn_enemy_sound_.play();
+        // TODO : Pas fan...
+        // spawn_enemy_sound_.play();
     }
 }
 
