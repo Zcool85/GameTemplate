@@ -59,6 +59,8 @@ class GameScene final
 public:
     explicit GameScene(GameEngine &game);
 
+    ~GameScene() override;
+
     auto update(const sf::Time &delta_time, sf::RenderWindow &render_window) -> void override;
 
     // TODO : A priori en privé ça serait mieux

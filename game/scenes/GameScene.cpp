@@ -38,7 +38,17 @@ GameScene::GameScene(GameEngine &game)
     entity_manager_.refresh();
 
     game_.getAssets().getMusic("GAME_LOOP"_music).setLooping(true);
+    game_.getAssets().getMusic("GAME_LOOP"_music).setVolume(20);
     game_.getAssets().getMusic("GAME_LOOP"_music).play();
+}
+
+GameScene::~GameScene() {
+    game_.getAssets().getMusic("GAME_LOOP"_music).stop();
+    shoot_sound_.stop();
+    death_sound_.stop();
+    game_over_sound_.stop();
+    kill_enemy_sound_.stop();
+    spawn_enemy_sound_.stop();
 }
 
 auto GameScene::spawnPlayer() -> void {
