@@ -134,6 +134,20 @@ Une fois la compilation terminée, l'outil se lance comme suit :
 ./build/bin/aseprite
 ```
 
+## Vulkan
+
+Cf. [C++ Headers](https://github.com/KhronosGroup/Vulkan-Hpp).
+
+[Vulkan SDK](https://vulkan.lunarg.com).
+
+[Mac Specifications](https://vulkan.lunarg.com/doc/sdk/1.4.304.0/mac/vkspec.html).
+
+```bash
+git submodule add git@github.com:KhronosGroup/Vulkan-Hpp.git external/Vulkan-Hpp
+cd external/Vulkan-Hpp
+git submodule update --init --recursive
+```
+
 ## Level supérieur
 
 Une fois que je me serais familiarisé avec la série YouTube, il faudra voir :
@@ -143,38 +157,6 @@ Une fois que je me serais familiarisé avec la série YouTube, il faudra voir :
 2) Puis cet [article](https://austinmorlan.com/posts/entity_component_system/)
 
 3)
+
 vraie [implémentation](https://github.com/CppCon/CppCon2015/blob/master/Tutorials/Implementation%20of%20a%20component-based%20entity%20system%20in%20modern%20C%2B%2B/Source%20Code/p7.cpp)
-
-## Tips and Tricks
-
-[Mermaid](https://mermaid.js.org/syntax/classDiagram.html).
-
-```mermaid
-graph LR
-    A[Do you write docs?]
-    A -- Yes --> B[Use Writerside]
-    A -- No --> C[Tell us why]
-```
-
-```plantuml
-@startuml
-left to right direction
-
-class User {
-id : INTEGER
-..
-other_id : INTEGER
-}
-
-class Email {
-id : INTEGER
-..
-user_id : INTEGER
-address : INTEGER
-}
-
-User::id *-- Email::user_id
-@enduml
-```
-
 

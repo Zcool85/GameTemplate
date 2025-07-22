@@ -2,9 +2,6 @@
 // Created by Zéro Cool on 19/06/2025.
 //
 
-#include <SFML/OpenGL.hpp>
-#include <imgui-SFML.h>
-
 #include "GameEngine.h"
 #include "scenes/GameScene.h"
 #include "scenes/MainMenuScene.h"

@@ -4,8 +4,7 @@
 #ifndef GAME_ENGINE_H
 #define GAME_ENGINE_H
 
-#include <map>
-#include <SFML/Graphics.hpp>
+#include "pch.h"
 
 #include "Assets.h"
 #include "scenes/Scene.h"

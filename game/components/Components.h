@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include <SFML/Graphics.hpp>
+#include "pch.h"
 
 #include "EcsTypes.h"
 #include "CTransform.h"

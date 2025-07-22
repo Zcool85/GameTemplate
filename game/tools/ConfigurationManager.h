@@ -5,8 +5,7 @@
 #ifndef CONFIGURATIONMANAGER_H
 #define CONFIGURATIONMANAGER_H
 
-#include <iostream>
-#include <libconfig.h++>
+#include "pch.h"
 
 #include "AssetsSettings.h"
 #include "BulletSettings.h"

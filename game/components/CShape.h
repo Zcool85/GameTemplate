@@ -5,8 +5,6 @@
 #ifndef CSHAPE_H
 #define CSHAPE_H
 
-#include <SFML/Graphics.hpp>
-
 struct CShape {
     sf::CircleShape circle;
 };

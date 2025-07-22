@@ -5,8 +5,6 @@
 #ifndef WINDOWSETTINGS_H
 #define WINDOWSETTINGS_H
 
-#include <string>
-
 namespace tools {
     struct WindowSettings {
         std::string title = "Default";

@@ -2,12 +2,6 @@
 // Created by Zéro Cool on 17/07/2025.
 //
 
-#include <SFML/OpenGL.hpp>
-#include <imgui-SFML.h>
-
-#include <ranges>
-
-#include "imgui.h"
 #include "GameScene.h"
 
 #include "physics/Physics.h"
@@ -22,7 +16,9 @@ GameScene::GameScene(GameEngine &game)
     const auto &font_settings = game_.configurationManager().getFontSettings();
 
     score_ = 0;
-    score_text_ = sf::Text{game.getAssets().getFont("DEFAULT"_font), set_score_text(score_), static_cast<unsigned>(font_settings.size)};
+    score_text_ = sf::Text{
+        game.getAssets().getFont("DEFAULT"_font), set_score_text(score_), static_cast<unsigned>(font_settings.size)
+    };
     score_text_.setFillColor({
         static_cast<std::uint8_t>(font_settings.color_r),
         static_cast<std::uint8_t>(font_settings.color_g),
@@ -383,7 +379,7 @@ auto GameScene::sCollision() -> void {
         ) {
                     if (!entity_manager_.isAlive(bullet_entity_index)) return;
                     if (Physics::isCollision(enemy_transform.position, bullet_transform.position,
-                                       enemy_collision.radius, bullet_collision.radius)) {
+                                             enemy_collision.radius, bullet_collision.radius)) {
                         score_ += enemy_score.score;
 
                         if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index)) {
@@ -399,7 +395,7 @@ auto GameScene::sCollision() -> void {
             if (!entity_manager_.isAlive(player_entity_handle_)) return;
 
             if (Physics::isCollision(enemy_transform.position, player_transform.position, enemy_collision.radius,
-                               player_collision.radius)) {
+                                     player_collision.radius)) {
                 if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index)) {
                     spawnSmallEnemies(enemy_entity_index);
                 }
@@ -530,7 +526,8 @@ auto GameScene::sGUI() -> void {
                                [[maybe_unused]] const CTransform &transform, [[maybe_unused]] CCollision &collision,
                                [[maybe_unused]] const CShape &shape, [[maybe_unused]] const CLifespan &lifespan) {
                             ImGui::PushID(0);
-                            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
+                            ImGui::PushStyleColor(ImGuiCol_Button,
+                                                  static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
                             if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
                                 this->entity_manager_.kill(entity_index);
                                 entity_manager_.refresh();

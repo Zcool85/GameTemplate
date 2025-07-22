@@ -5,8 +5,7 @@
 #ifndef ASSETS_H
 #define ASSETS_H
 
-#include <SFML/Graphics.hpp>
-#include <unordered_map>
+#include "pch.h"
 
 #include "Types.h"
 #include "tools/ConfigurationManager.h"
@@ -20,6 +19,7 @@ public:
     explicit Assets(tools::ConfigurationManager &configuration_manager);
 
     [[nodiscard]] auto getFont(FontId font_id) -> sf::Font &;
+
     [[nodiscard]] auto getTexture(TextureId texture_id) -> sf::Texture &;
 };
 

@@ -5,7 +5,7 @@
 #ifndef ASSETS_SETTINGS_H
 #define ASSETS_SETTINGS_H
 
-#include <unordered_map>
+#include "pch.h"
 
 #include "Types.h"
 

@@ -5,7 +5,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <cassert>
+#include "pch.h"
 
 // Source: https://gist.github.com/Lee-R/3839813
 constexpr auto fnv1a_32(char const *s, const std::size_t count) -> std::size_t { // NOLINT(*-no-recursion)
@@ -29,6 +29,7 @@ public:
         static_assert(N > 1, "String cannot be empty");
         static_assert(N <= 64, "String too long for identifier");
     }
+
     constexpr explicit strong_id(const std::string &str)
         : value_(fnv1a_32(str.c_str(), str.length())) {
         assert(str.length() > 1);
