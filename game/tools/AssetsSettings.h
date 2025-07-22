@@ -19,6 +19,7 @@ namespace tools {
         std::unordered_map<FontId, AssetSettings> fonts_settings{};
         std::unordered_map<TextureId, AssetSettings> textures_settings{};
         std::unordered_map<SoundId, AssetSettings> sounds_settings{};
+        std::unordered_map<MusicId, AssetSettings> musics_settings{};
     };
 }
 

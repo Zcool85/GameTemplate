@@ -20,7 +20,6 @@ class GameScene final
     sf::Sound game_over_sound_;
     sf::Sound kill_enemy_sound_;
     sf::Sound spawn_enemy_sound_;
-    sf::Sound game_loop_sound_;
 
     int score_;
     int health_;

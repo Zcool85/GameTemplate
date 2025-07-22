@@ -15,6 +15,7 @@ class Assets {
     std::unordered_map<FontId, sf::Font> fonts_;
     std::unordered_map<TextureId, sf::Texture> textures_;
     std::unordered_map<SoundId, sf::SoundBuffer> sounds_;
+    std::unordered_map<MusicId, sf::Music> musics_;
 
 public:
     explicit Assets(tools::ConfigurationManager &configuration_manager);
@@ -24,6 +25,8 @@ public:
     [[nodiscard]] auto getTexture(TextureId texture_id) -> sf::Texture &;
 
     [[nodiscard]] auto getSound(SoundId sound_id) -> sf::SoundBuffer &;
+
+    [[nodiscard]] auto getMusic(MusicId music_id) -> sf::Music &;
 };
 
 #endif //ASSETS_H

@@ -89,6 +89,9 @@ struct TextureTag {
 struct SoundTag {
 };
 
+struct MusicTag {
+};
+
 struct AssetTag {
 };
 
@@ -102,6 +105,7 @@ using SceneId = strong_id<SceneTag>;
 using FontId = strong_id<FontTag>;
 using TextureId = strong_id<TextureTag>;
 using SoundId = strong_id<SoundTag>;
+using MusicId = strong_id<MusicTag>;
 using ActionNameId = strong_id<ActionNameTag>;
 using ActionTypeId = strong_id<ActionTypeTag>;
 
@@ -119,6 +123,10 @@ constexpr TextureId operator""_texture(const char *s, const std::size_t count) {
 
 constexpr SoundId operator""_sound(const char *s, const std::size_t count) {
     return SoundId(fnv1a_32(s, count));
+}
+
+constexpr MusicId operator""_music(const char *s, const std::size_t count) {
+    return MusicId(fnv1a_32(s, count));
 }
 
 constexpr ActionNameId operator""_action_name(const char *s, const std::size_t count) {

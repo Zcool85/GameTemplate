@@ -129,6 +129,14 @@ namespace tools {
 
             asset_settings_.sounds_settings[SoundId{asset_settings.key}] = asset_settings;
         }
+
+        for (const auto &asset: assets_configuration_.lookup("musics")) {
+            AssetSettings asset_settings;
+            asset.lookupValue("key", asset_settings.key);
+            asset.lookupValue("file", asset_settings.file);
+
+            asset_settings_.musics_settings[MusicId{asset_settings.key}] = asset_settings;
+        }
     }
 
     auto ConfigurationManager::getWindowSettings() -> WindowSettings & {
