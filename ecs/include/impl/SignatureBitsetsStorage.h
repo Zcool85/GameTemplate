@@ -10,15 +10,13 @@
 #include "../tools/ForEachType.h"
 
 namespace ecs::impl {
-
     /**
      * Classe de stockage des bitset pour les signatures
      *
      * @tparam TSettings Paramétrage ECS
      */
     template<typename TSettings>
-    class SignatureBitsetsStorage
-    {
+    class SignatureBitsetsStorage {
         // Settings = Settings<ComponentList, TagList, SignatureList>
         using Settings = TSettings;
         // SignatureBitsets = SignatureBitsets<
@@ -45,7 +43,7 @@ namespace ecs::impl {
          */
         template<typename TSignature>
         auto &getSignatureBitset() noexcept {
-            static_assert(Settings::template isSignature<TSignature>(), "");
+            static_assert(Settings::template isSignature<TSignature>());
             return std::get<Settings::template signatureID<TSignature>()>(storage);
         }
 
@@ -55,9 +53,8 @@ namespace ecs::impl {
          * @return bitset de la signature correspondant (const)
          */
         template<typename TSignature>
-        const auto& getSignatureBitset() const noexcept
-        {
-            static_assert(Settings::template isSignature<TSignature>(), "");
+        const auto &getSignatureBitset() const noexcept {
+            static_assert(Settings::template isSignature<TSignature>());
             return std::get<Settings::template signatureID<TSignature>()>(storage);
         }
 
@@ -68,12 +65,11 @@ namespace ecs::impl {
          * @tparam TSignature Signature correspondant au bitset à initialiser
          */
         template<typename TSignature>
-        void initializeBitset() noexcept
-        {
+        void initializeBitset() noexcept {
             // NOTE : For Debug... All is OK
             // std::cout << "initializeBitset for " << typeid(TSignature).name() << std::endl;
 
-            auto& b(this->getSignatureBitset<TSignature>());
+            auto &b(this->getSignatureBitset<TSignature>());
 
             using SignatureComponents = typename SignatureBitsets::template SignatureComponents<TSignature>;
 
@@ -113,7 +109,6 @@ namespace ecs::impl {
             });
         }
     };
-
 }
 
 #endif //ECS_IMP_SIGNATURE_BITSETS_STORAGE_H

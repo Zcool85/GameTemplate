@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 21/06/2025.
 //
 
-#ifndef CONFIGURATIONMANAGER_H
-#define CONFIGURATIONMANAGER_H
+#ifndef CONFIGURATION_MANAGER_H
+#define CONFIGURATION_MANAGER_H
 
 #include "pch.h"
 
@@ -59,4 +59,4 @@ namespace tools {
     };
 } // tools
 
-#endif //CONFIGURATIONMANAGER_H
+#endif //CONFIGURATION_MANAGER_H

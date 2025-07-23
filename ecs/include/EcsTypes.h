@@ -10,7 +10,6 @@
 #include "tools/TypeList.h"
 
 namespace ecs {
-
     template<typename... Ts>
     using ComponentList = tools::TypeList<Ts...>;
     template<typename... Ts>
@@ -22,11 +21,16 @@ namespace ecs {
 
     using EntityIndex = tools::strong_typedef<std::size_t, impl::EntityIndexTag>;
 
-    // TODO : Pour moi tous ces autres types sont internal...
+    // TODO : Pour ces 3 autres types sont internal...
     using DataIndex = tools::strong_typedef<std::size_t, impl::DataIndexTag>;
     using HandleDataIndex = tools::strong_typedef<std::size_t, impl::HandleDataIndexTag>;
     using Counter = tools::strong_typedef<int, impl::CounterTag>;
 
+    struct Handle {
+        // TODO : Faire en sorte que le contenu ne puisse pas être visible pour le développeur
+        HandleDataIndex handleDataIndex;
+        Counter counter;
+    };
 }
 
 #endif //ECS_TYPES_H

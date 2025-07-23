@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 08/07/2025.
 //
 
-#ifndef ENEMYSETTINGS_H
-#define ENEMYSETTINGS_H
+#ifndef ENEMY_SETTINGS_H
+#define ENEMY_SETTINGS_H
 
 namespace tools {
     struct EnemySettings {
@@ -22,4 +22,4 @@ namespace tools {
     };
 }
 
-#endif //ENEMYSETTINGS_H
+#endif //ENEMY_SETTINGS_H

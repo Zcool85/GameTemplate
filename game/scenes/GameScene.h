@@ -11,7 +11,7 @@
 
 class GameScene final
         : public Scene {
-    ecs::impl::Handle player_entity_handle_{};
+    ecs::Handle player_entity_handle_{};
     sf::Text score_text_;
     // Seed for random number
     std::random_device random_device_;
@@ -52,7 +52,7 @@ class GameScene final
 
     auto spawnEnemy() -> void;
 
-    auto spawnBullet(ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void;
+    auto spawnBullet(ecs::Handle player_handle, const sf::Vector2f &target) -> void;
 
     auto spawnSmallEnemies(ecs::EntityIndex enemy) -> void;
 

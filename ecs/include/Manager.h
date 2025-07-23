@@ -10,7 +10,6 @@
 
 #include "impl/ComponentStorage.h"
 #include "impl/Entity.h"
-#include "impl/Handle.h"
 #include "impl/HandleData.h"
 #include "impl/SignatureBitsetsStorage.h"
 
@@ -31,11 +30,6 @@ namespace ecs {
 
         using Entity = impl::Entity<Settings>;
         using HandleData = impl::HandleData;
-
-    public:
-        using Handle = impl::Handle;
-
-    private:
         using SignatureBitsetsStorage = impl::SignatureBitsetsStorage<Settings>;
         using ComponentStorage = impl::ComponentStorage<Settings>;
 
@@ -337,7 +331,7 @@ namespace ecs {
             hd.entityIndex = freeIndex;
 
             // Initialize a valid entity handle.
-            Handle h;
+            Handle h{};
 
             // The handle will point to the entity's
             // handle data...

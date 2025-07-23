@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 21/06/2025.
 //
 
-#ifndef GRAPHICSSETTINGS_H
-#define GRAPHICSSETTINGS_H
+#ifndef GRAPHICS_SETTINGS_H
+#define GRAPHICS_SETTINGS_H
 
 namespace tools {
     struct GraphicsSettings {
@@ -18,4 +18,4 @@ namespace tools {
     };
 } // tools
 
-#endif //GRAPHICSSETTINGS_H
+#endif //GRAPHICS_SETTINGS_H

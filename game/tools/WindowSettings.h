@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 21/06/2025.
 //
 
-#ifndef WINDOWSETTINGS_H
-#define WINDOWSETTINGS_H
+#ifndef WINDOW_SETTINGS_H
+#define WINDOW_SETTINGS_H
 
 namespace tools {
     struct WindowSettings {
@@ -14,4 +14,4 @@ namespace tools {
     };
 } // tools
 
-#endif //WINDOWSETTINGS_H
+#endif //WINDOW_SETTINGS_H

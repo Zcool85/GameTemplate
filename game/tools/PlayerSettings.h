@@ -2,8 +2,8 @@
 // Created by Zéro Cool on 08/07/2025.
 //
 
-#ifndef PLAYERSETTINGS_H
-#define PLAYERSETTINGS_H
+#ifndef PLAYER_SETTINGS_H
+#define PLAYER_SETTINGS_H
 
 namespace tools {
     struct PlayerSettings {
@@ -21,4 +21,4 @@ namespace tools {
     };
 }
 
-#endif //PLAYERSETTINGS_H
+#endif //PLAYER_SETTINGS_H

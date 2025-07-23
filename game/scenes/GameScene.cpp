@@ -130,7 +130,7 @@ auto GameScene::spawnEnemy() -> void {
     score.score = 100 * static_cast<int>(shape.circle.getPointCount());
 }
 
-auto GameScene::spawnBullet(const ecs::impl::Handle player_handle, const sf::Vector2f &target) -> void {
+auto GameScene::spawnBullet(const ecs::Handle player_handle, const sf::Vector2f &target) -> void {
     const auto &player_transform(entity_manager_.getComponent<CTransform>(player_handle));
 
     const sf::Vector2f direction = (target - player_transform.position).normalized();
