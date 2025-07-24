@@ -4,7 +4,6 @@
 
 #include "GameScene.h"
 
-#include "Log.h"
 #include "physics/Physics.h"
 #include "scenes/MainMenuScene.h"
 

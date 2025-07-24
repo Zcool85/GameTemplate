@@ -4,6 +4,3 @@
 [submodule "external/imgui-sfml"]
 	path = external/imgui-sfml
 	url = git@github.com:SFML/imgui-sfml.git
-[submodule "external/spdlog"]
-	path = external/spdlog
-	url = https://github.com/gabime/spdlog

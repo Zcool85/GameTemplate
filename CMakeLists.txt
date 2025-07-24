@@ -12,9 +12,6 @@ project(GameTemplate
         DESCRIPTION "Game project template"
 )
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
-
 ###########################################################################
 #
 #    Définition des options de compilation
@@ -71,45 +68,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(argparse)
 
-#### SFML
+#### game
 
-find_package(SFML 3 REQUIRED COMPONENTS System Window Graphics Network Audio)
-
-# Check for imgui-sfml CMakeLists.txt file
-if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui-sfml/CMakeLists.txt")
-    message("${CMAKE_CURRENT_SOURCE_DIR}/external/imgui-sfml/CMakeLists.txt")
-    message(FATAL_ERROR "Please initialize submodules using:\n  git submodule update --init --recursive")
-else ()
-    message(STATUS "Found imgui-sfml in ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui-sfml")
-endif ()
-
-#### ImGui for SFML
-set(IMGUI_SFML_FIND_SFML OFF)
-set(IMGUI_SFML_ENABLE_WARNINGS ON)
-#set(IMGUI_SFML_DISABLE_OBSOLETE_FUNCTIONS ON)
-set(IMGUI_SFML_IMGUI_DEMO OFF)
-set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui")
-add_subdirectory(external/imgui-sfml)
-
-#### libconfig
-
-find_package(Config++ REQUIRED)
-
-#### spdlog
-
-add_subdirectory(external/spdlog)
-
-
-###########################################################################
-#
-#    Binaire de test pour le Framework ECS
-#
-###########################################################################
-
-add_executable(TestEcs ecs/src/main.cpp)
-
-# ECS Framework
-target_include_directories(TestEcs PRIVATE ecs/include)
+add_subdirectory(game)
 
 ###########################################################################
 #
@@ -118,26 +79,12 @@ target_include_directories(TestEcs PRIVATE ecs/include)
 ###########################################################################
 
 add_executable(${PROJECT_NAME} main.cpp)
-
-# ECS Framework
-target_include_directories(${PROJECT_NAME} PRIVATE ecs/include)
-
-# Add CMakeLists.txt for the game sources
-add_subdirectory(game)
-# Add src directory where we can find header files for the project
-target_include_directories(${PROJECT_NAME} PRIVATE game)
-
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
-        config++
         argparse
-        GameLib
-        SFML::Graphics SFML::Audio SFML::System SFML::Window SFML::Network
-        ImGui-SFML::ImGui-SFML
-        spdlog::spdlog
-        # TODO : Voir si à garder...
-        ${OPENGL_LIBRARIES}
-        "-framework OpenGL"
+        GameLib::GameLib
+        SharedPCH
+        ecs::ecs
 )
 
 # Copy config directory to output directory

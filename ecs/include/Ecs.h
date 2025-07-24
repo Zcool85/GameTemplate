@@ -27,6 +27,7 @@
 #include "EcsTypes.h"
 #include "Settings.h"
 #include "Manager.h"
+#include "Log.h"
 
 
 // Inspirations = https://github.com/CppCon/CppCon2015/blob/master/Tutorials/Implementation%20of%20a%20component-based%20entity%20system%20in%20modern%20C%2B%2B/Source%20Code/p3.cpp

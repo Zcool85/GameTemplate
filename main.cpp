@@ -1,12 +1,12 @@
 #include <filesystem>
 #include <argparse/argparse.hpp>
 
-#include "Log.h"
+#include "Ecs.h"
 #include "game/GameEngine.h"
 
 int main(const int argc, char *argv[]) {
-    Log::Init();
-    Log::GetAppLogger()->warn("Logs initialisés !");
+    ecs::Log::Init();
+    ecs::Log::GetAppLogger()->warn("Logs initialisés !");
 
     std::string configuration_file_path;
     std::string assets_configuration_file_path;
