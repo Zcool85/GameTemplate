@@ -11,7 +11,8 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   #BUILD_TYPE: Release
-  TEST: MyEnv
+  SFML_VERSION: '3.0.1'
+  CMAKE_BUILD_PARALLEL_LEVEL: ${{ github.event.inputs.parallel_jobs || '4' }}
 
 jobs:
   build:
@@ -34,10 +35,19 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install libconfig++-dev libsfml-dev
 
-      - name: ⚙️ Install libsfml-dev
+      - name: Setup SFML
+        id: sfml
+        uses: ./.github/actions/setup-sfml
+        with:
+          version: ${{env.SFML_VERSION}}
+          cache: 'true'
+          parallel-jobs: ${{env.CMAKE_BUILD_PARALLEL_LEVEL}}
+
+      - name: Display SFML info
         run: |
-          sudo apt-get update
-          sudo apt-get -y install libsfml-dev
+          echo "SFML installed in: ${{ steps.sfml.outputs.sfml-root }}"
+          echo "Cache hit: ${{ steps.sfml.outputs.cache-hit }}"
+          echo "SFML_ROOT env var: $SFML_ROOT"
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

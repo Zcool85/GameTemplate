@@ -1,0 +1,225 @@
+name: 'Setup SFML'
+description: 'Download, compile and install SFML from source'
+author: 'Zéro Cool'
+
+inputs:
+  version:
+    description: 'SFML version to install'
+    required: false
+    default: '3.0.1'
+
+  cache:
+    description: 'Enable caching of compiled SFML'
+    required: false
+    default: 'true'
+
+  build-type:
+    description: 'CMake build type'
+    required: false
+    default: 'Release'
+
+  build-examples:
+    description: 'Build SFML examples'
+    required: false
+    default: 'false'
+
+  build-docs:
+    description: 'Build SFML documentation'
+    required: false
+    default: 'false'
+
+  shared-libs:
+    description: 'Build shared libraries'
+    required: false
+    default: 'true'
+
+  install-prefix:
+    description: 'Installation prefix'
+    required: false
+    default: ''
+
+  parallel-jobs:
+    description: 'Number of parallel compilation jobs'
+    required: false
+    default: '0'
+
+outputs:
+  sfml-root:
+    description: 'SFML installation root directory'
+    value: ${{ steps.install.outputs.sfml-root }}
+
+  cache-hit:
+    description: 'Whether SFML was loaded from cache'
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Determine platform and settings
+      id: platform
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          echo "install-prefix=${{ inputs.install-prefix || '/usr/local' }}" >> $GITHUB_OUTPUT
+          echo "parallel-jobs=${{ inputs.parallel-jobs != '0' && inputs.parallel-jobs || '$(nproc)' }}" >> $GITHUB_OUTPUT
+          echo "lib-extension=so" >> $GITHUB_OUTPUT
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          echo "install-prefix=${{ inputs.install-prefix || 'C:/SFML' }}" >> $GITHUB_OUTPUT
+          echo "parallel-jobs=${{ inputs.parallel-jobs != '0' && inputs.parallel-jobs || '$env:NUMBER_OF_PROCESSORS' }}" >> $GITHUB_OUTPUT
+          echo "lib-extension=dll" >> $GITHUB_OUTPUT
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          echo "install-prefix=${{ inputs.install-prefix || '/usr/local' }}" >> $GITHUB_OUTPUT
+          echo "parallel-jobs=${{ inputs.parallel-jobs != '0' && inputs.parallel-jobs || '$(sysctl -n hw.ncpu)' }}" >> $GITHUB_OUTPUT
+          echo "lib-extension=dylib" >> $GITHUB_OUTPUT
+        fi
+        
+        # Générer une clé de cache unique
+        echo "cache-key=sfml-${{ inputs.version }}-${{ runner.os }}-${{ inputs.build-type }}-${{ inputs.shared-libs }}-$(echo '${{ steps.platform.outputs.install-prefix }}' | sed 's/[\/:]/-/g')" >> $GITHUB_OUTPUT
+
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          git \
+          libfreetype6-dev \
+          libopenal-dev \
+          libvorbis-dev \
+          libflac-dev \
+          libudev-dev \
+          libgl1-mesa-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libxinerama-dev
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        # CMake est généralement déjà installé sur les runners macOS
+        brew update || true
+        # Pas de dépendances supplémentaires requises sur macOS
+
+    - name: Setup MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Cache SFML installation
+      id: cache
+      if: inputs.cache == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ steps.platform.outputs.install-prefix }}/lib/libsfml*
+          ${{ steps.platform.outputs.install-prefix }}/lib/sfml*
+          ${{ steps.platform.outputs.install-prefix }}/include/SFML
+          ${{ steps.platform.outputs.install-prefix }}/lib/cmake/SFML
+          ${{ steps.platform.outputs.install-prefix }}/share/SFML
+        key: ${{ steps.platform.outputs.cache-key }}
+
+    - name: Download SFML source
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        git clone --depth 1 --branch ${{ inputs.version }} https://github.com/SFML/SFML.git sfml-source
+
+    - name: Configure SFML (Unix)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
+      shell: bash
+      run: |
+        cd sfml-source
+        mkdir build && cd build
+        
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} \
+          -DCMAKE_INSTALL_PREFIX=${{ steps.platform.outputs.install-prefix }} \
+          -DSFML_BUILD_EXAMPLES=${{ inputs.build-examples == 'true' && 'ON' || 'OFF' }} \
+          -DSFML_BUILD_DOC=${{ inputs.build-docs == 'true' && 'ON' || 'OFF' }} \
+          -DBUILD_SHARED_LIBS=${{ inputs.shared-libs == 'true' && 'ON' || 'OFF' }}
+
+    - name: Configure SFML (Windows)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
+      shell: cmd
+      run: |
+        cd sfml-source
+        mkdir build
+        cd build
+        
+        cmake .. ^
+          -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} ^
+          -DCMAKE_INSTALL_PREFIX=${{ steps.platform.outputs.install-prefix }} ^
+          -DSFML_BUILD_EXAMPLES=${{ inputs.build-examples == 'true' && 'ON' || 'OFF' }} ^
+          -DSFML_BUILD_DOC=${{ inputs.build-docs == 'true' && 'ON' || 'OFF' }} ^
+          -DBUILD_SHARED_LIBS=${{ inputs.shared-libs == 'true' && 'ON' || 'OFF' }}
+
+    - name: Build SFML (Unix)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
+      shell: bash
+      run: |
+        cd sfml-source/build
+        make -j${{ steps.platform.outputs.parallel-jobs }}
+
+    - name: Build SFML (Windows)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
+      shell: cmd
+      run: |
+        cd sfml-source\build
+        cmake --build . --config ${{ inputs.build-type }} --parallel ${{ steps.platform.outputs.parallel-jobs }}
+
+    - name: Install SFML (Unix)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
+      shell: bash
+      run: |
+        cd sfml-source/build
+        sudo make install
+
+    - name: Install SFML (Windows)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
+      shell: cmd
+      run: |
+        cd sfml-source\build
+        cmake --build . --config ${{ inputs.build-type }} --target install
+
+    - name: Update library cache (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo ldconfig
+
+    - name: Cleanup source files
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        rm -rf sfml-source
+
+    - name: Verify installation
+      id: install
+      shell: bash
+      run: |
+        echo "sfml-root=${{ steps.platform.outputs.install-prefix }}" >> $GITHUB_OUTPUT
+        
+        # Vérifier que les fichiers sont bien installés
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          if [[ ! -d "${{ steps.platform.outputs.install-prefix }}/include/SFML" ]]; then
+            echo "❌ SFML headers not found!"
+            exit 1
+          fi
+          echo "✅ SFML successfully installed in ${{ steps.platform.outputs.install-prefix }}"
+        else
+          if [[ ! -d "${{ steps.platform.outputs.install-prefix }}/include/SFML" ]]; then
+            echo "❌ SFML headers not found!"
+            exit 1
+          fi
+          echo "✅ SFML successfully installed in ${{ steps.platform.outputs.install-prefix }}"
+        fi
+
+    - name: Set environment variables
+      shell: bash
+      run: |
+        echo "SFML_ROOT=${{ steps.platform.outputs.install-prefix }}" >> $GITHUB_ENV
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          echo "${{ steps.platform.outputs.install-prefix }}/bin" >> $GITHUB_PATH
+        fi
