@@ -77,6 +77,19 @@ Add this to our `CMakeLists.txt` file :
 
 ```
 
+## spdlog
+
+Cf. [spdlog](https://github.com/gabime/spdlog).
+
+Add submodule :
+
+```bash
+mkdir external
+git submodule add https://github.com/gabime/spdlog ./external/spdlog
+cd ./external/spdlog
+git checkout v1.15.3
+```
+
 ## CMake tutorial
 
 Cf. [Tutorial](https://edw.is/using-cmake/).

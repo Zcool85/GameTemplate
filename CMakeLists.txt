@@ -95,6 +95,11 @@ add_subdirectory(external/imgui-sfml)
 
 find_package(Config++ REQUIRED)
 
+#### spdlog
+
+add_subdirectory(external/spdlog)
+
+
 ###########################################################################
 #
 #    Binaire de test pour le Framework ECS
@@ -129,6 +134,7 @@ target_link_libraries(${PROJECT_NAME}
         GameLib
         SFML::Graphics SFML::Audio SFML::System SFML::Window SFML::Network
         ImGui-SFML::ImGui-SFML
+        spdlog::spdlog
         # TODO : Voir si à garder...
         ${OPENGL_LIBRARIES}
         "-framework OpenGL"

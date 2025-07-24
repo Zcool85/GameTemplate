@@ -1,9 +1,13 @@
 #include <filesystem>
 #include <argparse/argparse.hpp>
 
+#include "Log.h"
 #include "game/GameEngine.h"
 
 int main(const int argc, char *argv[]) {
+    Log::Init();
+    Log::GetAppLogger()->warn("Logs initialisés !");
+
     std::string configuration_file_path;
     std::string assets_configuration_file_path;
 
@@ -36,7 +40,8 @@ int main(const int argc, char *argv[]) {
     }
 
     if (!std::filesystem::exists(assets_configuration_file_path)) {
-        std::cerr << "Assets configuration file \"" << assets_configuration_file_path << "\" don't exists !" << std::endl;
+        std::cerr << "Assets configuration file \"" << assets_configuration_file_path << "\" don't exists !" <<
+                std::endl;
         return EXIT_FAILURE;
     }
 
@@ -45,9 +50,7 @@ int main(const int argc, char *argv[]) {
     game.run();
 
     return EXIT_SUCCESS;
-
 }
-
 
 
 // #include "tools/Observable.h"
@@ -134,7 +137,6 @@ int main(const int argc, char *argv[]) {
 //std::println("ButtonClickEvent observers: {}", ui_observable.observer_count<ButtonClickEvent>());
 //std::println("WindowResizeEvent observers: {}", ui_observable.observer_count<WindowResizeEvent>());
 //std::println("KeyPressEvent observers: {}", ui_observable.observer_count<KeyPressEvent>());
-
 
 
 // int wazaa = 42;

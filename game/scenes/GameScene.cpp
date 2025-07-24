@@ -4,6 +4,7 @@
 
 #include "GameScene.h"
 
+#include "Log.h"
 #include "physics/Physics.h"
 #include "scenes/MainMenuScene.h"
 
@@ -19,6 +20,8 @@ GameScene::GameScene(GameEngine &game)
       kill_enemy_sound_{game_.getAssets().getSound("KILL_ENEMY"_sound)},
       spawn_enemy_sound_{game_.getAssets().getSound("SWEEP"_sound)},
       health_{5} {
+    ECS_CORE_TRACE("GameScene constructor");
+
     const auto &font_settings = game_.configurationManager().getFontSettings();
 
     score_ = 0;

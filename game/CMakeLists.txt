@@ -6,6 +6,7 @@ add_library(GameLib STATIC
         scenes/GameScene.cpp
         Assets.cpp
         physics/Physics.cpp
+        Log.cpp
 )
 
 # Ajout d'un Pre-Compiled Header
@@ -24,4 +25,5 @@ target_link_libraries(GameLib PRIVATE
         SFML::Window
         SFML::Network
         ImGui-SFML::ImGui-SFML
+        spdlog::spdlog
 )

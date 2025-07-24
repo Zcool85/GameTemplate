@@ -23,6 +23,7 @@
 #include <iostream>
 #include <cassert>
 #include <filesystem>
+#include <memory>
 
 #include "Ecs.h"
 
