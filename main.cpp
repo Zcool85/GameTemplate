@@ -29,19 +29,19 @@ int main(const int argc, char *argv[]) {
     try {
         program.parse_args(argc, argv);
     } catch (const std::exception &err) {
-        std::cerr << err.what() << std::endl;
-        std::cerr << program;
+        ecs::Log::GetAppLogger()->critical(err.what());
+        ecs::Log::GetAppLogger()->critical(program.help().str());
         return EXIT_FAILURE;
     }
 
     if (!std::filesystem::exists(configuration_file_path)) {
-        std::cerr << "Configuration file \"" << configuration_file_path << "\" don't exists !" << std::endl;
+        ecs::Log::GetAppLogger()->critical("Configration file {0} does not exist", configuration_file_path);
         return EXIT_FAILURE;
     }
 
     if (!std::filesystem::exists(assets_configuration_file_path)) {
-        std::cerr << "Assets configuration file \"" << assets_configuration_file_path << "\" don't exists !" <<
-                std::endl;
+        ecs::Log::GetAppLogger()->critical("Assets configuration file {0} does not exist",
+                                           assets_configuration_file_path);
         return EXIT_FAILURE;
     }
 

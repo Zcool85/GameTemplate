@@ -44,14 +44,7 @@ GameScene::GameScene(GameEngine &game)
     game_.getAssets().getMusic("GAME_LOOP"_music).play();
 }
 
-GameScene::~GameScene() {
-    game_.getAssets().getMusic("GAME_LOOP"_music).stop();
-    shoot_sound_.stop();
-    death_sound_.stop();
-    game_over_sound_.stop();
-    kill_enemy_sound_.stop();
-    spawn_enemy_sound_.stop();
-}
+GameScene::~GameScene() = default;
 
 auto GameScene::spawnPlayer() -> void {
     const auto &player_settings = game_.configurationManager().getPlayerSettings();
@@ -288,6 +281,13 @@ auto GameScene::sUserInput(sf::Window &window) -> void {
         [&](const sf::Event::Closed &closed) {
             ImGui::SFML::ProcessEvent(window, closed);
             ended_ = true;
+
+            game_.getAssets().getMusic("GAME_LOOP"_music).stop();
+            shoot_sound_.stop();
+            death_sound_.stop();
+            game_over_sound_.stop();
+            kill_enemy_sound_.stop();
+            spawn_enemy_sound_.stop();
         },
         [&](const sf::Event::MouseButtonPressed &mouse_button_pressed) {
             ImGui::SFML::ProcessEvent(window, mouse_button_pressed);

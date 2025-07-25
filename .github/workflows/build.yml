@@ -31,7 +31,7 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: ⚙️ Install libconfig++
+      - name: ⚙️ Install libconfig++-dev libsfml-dev and clang-17
         run: |
           sudo apt-get update
           sudo apt-get -y install libconfig++-dev libsfml-dev clang-17
