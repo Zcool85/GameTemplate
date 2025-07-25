@@ -138,13 +138,13 @@ constexpr ActionTypeId operator""_action_type(const char *s, const std::size_t c
 }
 
 
-constexpr void compile_time_test() {
+inline void compile_time_test() {
     const std::string toto = "toto";
     [[maybe_unused]] SceneId test{"toto"};
-    [[maybe_unused]] SceneId test2{toto};
+    [[maybe_unused]] const SceneId test2{toto};
     auto id0{"Wazzaa"_scene};
     [[maybe_unused]] auto id1{"toto"_action_name};
-    [[maybe_unused]] auto id3{"toto"_action_name};
+    [[maybe_unused]] constexpr auto id3{"toto"_action_name};
 
     assert(test.value() == test2.value());
 
