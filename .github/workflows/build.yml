@@ -36,11 +36,6 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install libconfig++-dev libsfml-dev clang-17
 
-      - name: ⚙️ Install clang-17
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install clang-17
-
       - name: ⚙️ Setup SFML
         id: sfml
         uses: ./.github/actions/setup-sfml

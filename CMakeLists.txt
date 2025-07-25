@@ -21,6 +21,8 @@ project(GameTemplate
 # C++23 (CLion limit to C++2b)
 set(CMAKE_CXX_STANDARD 23)
 
+message("Compiler ID : ${CMAKE_CXX_COMPILER_ID}")
+
 # Détection du compilateur et de l'architecture
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     set(NATIVE_OPTIMIZATION_FLAGS "-march=native")
