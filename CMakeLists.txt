@@ -31,6 +31,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     # Optimisations supplémentaires pour les compilateurs GCC/Clang
     set(PERFORMANCE_FLAGS "-O3 -funroll-loops -ffast-math")
 
+    add_compile_options(-include cstdint)
     set(STRICT_COMPILE_OPTIONS
             -Werror -Wall -Wextra -Wpedantic -Wshadow
             -Wconversion -Wsign-conversion -Wattributes
