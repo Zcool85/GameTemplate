@@ -1,0 +1,69 @@
+name: 'Setup libconfig'
+description: 'Download, compile and install libconfig from source'
+author: 'Zéro Cool'
+
+inputs:
+  version:
+    description: 'libconfig version to install'
+    required: false
+    default: '1.8.1'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          git
+
+    - name: Download libconfig source
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        git clone --branch ${{ inputs.version }} https://github.com/hyperrealm/libconfig.git libconfig
+
+    - name: Configure libconfig (Unix)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        cd libconfig
+        mkdir build && cd build
+        
+        cmake ..
+
+    - name: Build libconfig (Unix)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        cd libconfig/build
+        make
+
+    - name: Install libconfig (Unix)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        cd libconfig/build
+        sudo make install
+
+    - name: Update library cache (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo ldconfig
+
+    - name: Cleanup source files
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        rm -rf libconfig
+
+    - name: Verify installation
+      if: runner.os == 'Linux'
+      id: install
+      shell: bash
+      run: |
+        pkg-config --modversion libconfig++

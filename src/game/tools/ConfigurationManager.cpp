@@ -15,14 +15,14 @@ namespace tools {
     ConfigurationManager::ConfigurationManager(const std::string &file_path, const std::string &assets_file_path)
         : file_path_(file_path), assets_file_path_(assets_file_path)
     {
-        configuration_.setOptions(libconfig::Config::Option::OptionFsync
-                                  | libconfig::Config::Option::OptionSemicolonSeparators
-                                  | libconfig::Config::Option::OptionColonAssignmentForGroups
-                                  | libconfig::Config::Option::OptionOpenBraceOnSeparateLine);
+        configuration_.setOptions(libconfig::Config::OptionFsync
+                                  | libconfig::Config::OptionSemicolonSeparators
+                                  | libconfig::Config::OptionColonAssignmentForGroups
+                                  | libconfig::Config::OptionOpenBraceOnSeparateLine);
 
         try
         {
-            configuration_.readFile(file_path.c_str());
+            configuration_.readFile(file_path);
         }
         catch (const libconfig::FileIOException &file_io_exception)
         {
@@ -97,14 +97,14 @@ namespace tools {
         configuration_.lookupValue("bullet.lifespan", bullet_settings_.lifespan);
 
         // TODO : Faire mieux... Je duplique dans tous les sens...
-        assets_configuration_.setOptions(libconfig::Config::Option::OptionFsync
-                                         | libconfig::Config::Option::OptionSemicolonSeparators
-                                         | libconfig::Config::Option::OptionColonAssignmentForGroups
-                                         | libconfig::Config::Option::OptionOpenBraceOnSeparateLine);
+        assets_configuration_.setOptions(libconfig::Config::OptionFsync
+                                         | libconfig::Config::OptionSemicolonSeparators
+                                         | libconfig::Config::OptionColonAssignmentForGroups
+                                         | libconfig::Config::OptionOpenBraceOnSeparateLine);
 
         try
         {
-            assets_configuration_.readFile(assets_file_path.c_str());
+            assets_configuration_.readFile(assets_file_path);
         }
         catch (const libconfig::FileIOException &file_io_exception)
         {
@@ -241,7 +241,7 @@ namespace tools {
             root.add(key, type);
         }
 
-        return root[key.c_str()];
+        return root[key];
     }
 
     template<typename T>
