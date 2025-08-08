@@ -32,10 +32,10 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: ⚙️ Install libsfml-dev and clang-17
+      - name: ⚙️ Install libsfml-dev and g++-14
         run: |
           sudo apt-get update
-          sudo apt-get -y install libsfml-dev libstdc++-14-dev clang-17
+          sudo apt-get -y install libsfml-dev g++-14
 
       - name: ⚙️ Setup libconfig
         id: libconfig
