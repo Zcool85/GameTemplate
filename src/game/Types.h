@@ -40,7 +40,7 @@ public:
         assert(str.length() <= 64);
     }
 
-    constexpr strong_id() : value_(0) {}
+    constexpr strong_id() : value_{0} {}
 
     constexpr explicit strong_id(const std::size_t value) : value_(value) {}
 

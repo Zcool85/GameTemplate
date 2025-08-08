@@ -4,6 +4,8 @@
 
 #include "ConfigurationManager.h"
 
+#include "libconfig.h++"
+
 namespace tools {
     /**
      * Class de gestion des configurations
@@ -11,18 +13,23 @@ namespace tools {
      * @param assets_file_path Chemin vers le fichier de configuration des assets
      */
     ConfigurationManager::ConfigurationManager(const std::string &file_path, const std::string &assets_file_path)
-        : file_path_(file_path), assets_file_path_(assets_file_path) {
-        configuration_.setOptions(libconfig::Config::OptionFsync
-                                  | libconfig::Config::OptionSemicolonSeparators
-                                  | libconfig::Config::OptionColonAssignmentForGroups
-                                  | libconfig::Config::OptionOpenBraceOnSeparateLine);
+        : file_path_(file_path), assets_file_path_(assets_file_path)
+    {
+        configuration_.setOptions(libconfig::Config::Option::OptionFsync
+                                  | libconfig::Config::Option::OptionSemicolonSeparators
+                                  | libconfig::Config::Option::OptionColonAssignmentForGroups
+                                  | libconfig::Config::Option::OptionOpenBraceOnSeparateLine);
 
-        try {
-            configuration_.readFile(file_path);
-        } catch (const libconfig::FileIOException &file_io_exception) {
+        try
+        {
+            configuration_.readFile(file_path.c_str());
+        }
+        catch (const libconfig::FileIOException &file_io_exception)
+        {
             std::cerr << "I/O error while reading file : " << file_io_exception.what() << std::endl;
         }
-        catch (const libconfig::ParseException &parse_exception) {
+        catch (const libconfig::ParseException &parse_exception)
+        {
             std::cerr << "Parse error at " << parse_exception.getFile() << ":" << parse_exception.getLine()
                     << " - " << parse_exception.getError() << std::endl;
             throw;
@@ -90,23 +97,28 @@ namespace tools {
         configuration_.lookupValue("bullet.lifespan", bullet_settings_.lifespan);
 
         // TODO : Faire mieux... Je duplique dans tous les sens...
-        assets_configuration_.setOptions(libconfig::Config::OptionFsync
-                                         | libconfig::Config::OptionSemicolonSeparators
-                                         | libconfig::Config::OptionColonAssignmentForGroups
-                                         | libconfig::Config::OptionOpenBraceOnSeparateLine);
+        assets_configuration_.setOptions(libconfig::Config::Option::OptionFsync
+                                         | libconfig::Config::Option::OptionSemicolonSeparators
+                                         | libconfig::Config::Option::OptionColonAssignmentForGroups
+                                         | libconfig::Config::Option::OptionOpenBraceOnSeparateLine);
 
-        try {
-            assets_configuration_.readFile(assets_file_path);
-        } catch (const libconfig::FileIOException &file_io_exception) {
+        try
+        {
+            assets_configuration_.readFile(assets_file_path.c_str());
+        }
+        catch (const libconfig::FileIOException &file_io_exception)
+        {
             std::cerr << "I/O error while reading file : " << file_io_exception.what() << std::endl;
         }
-        catch (const libconfig::ParseException &parse_exception) {
+        catch (const libconfig::ParseException &parse_exception)
+        {
             std::cerr << "Parse error at " << parse_exception.getFile() << ":" << parse_exception.getLine()
                     << " - " << parse_exception.getError() << std::endl;
             throw;
         }
 
-        for (const auto &asset: assets_configuration_.lookup("fonts")) {
+        for (const auto &asset: assets_configuration_.lookup("fonts"))
+        {
             AssetSettings asset_settings;
             asset.lookupValue("key", asset_settings.key);
             asset.lookupValue("file", asset_settings.file);
@@ -114,7 +126,8 @@ namespace tools {
             asset_settings_.fonts_settings[FontId{asset_settings.key}] = asset_settings;
         }
 
-        for (const auto &asset: assets_configuration_.lookup("textures")) {
+        for (const auto &asset: assets_configuration_.lookup("textures"))
+        {
             AssetSettings asset_settings;
             asset.lookupValue("key", asset_settings.key);
             asset.lookupValue("file", asset_settings.file);
@@ -122,7 +135,8 @@ namespace tools {
             asset_settings_.textures_settings[TextureId{asset_settings.key}] = asset_settings;
         }
 
-        for (const auto &asset: assets_configuration_.lookup("sounds")) {
+        for (const auto &asset: assets_configuration_.lookup("sounds"))
+        {
             AssetSettings asset_settings;
             asset.lookupValue("key", asset_settings.key);
             asset.lookupValue("file", asset_settings.file);
@@ -130,7 +144,8 @@ namespace tools {
             asset_settings_.sounds_settings[SoundId{asset_settings.key}] = asset_settings;
         }
 
-        for (const auto &asset: assets_configuration_.lookup("musics")) {
+        for (const auto &asset: assets_configuration_.lookup("musics"))
+        {
             AssetSettings asset_settings;
             asset.lookupValue("key", asset_settings.key);
             asset.lookupValue("file", asset_settings.file);
@@ -139,36 +154,45 @@ namespace tools {
         }
     }
 
-    auto ConfigurationManager::getWindowSettings() -> WindowSettings & {
+    auto ConfigurationManager::getWindowSettings() -> WindowSettings &
+    {
         return window_settings_;
     }
 
-    auto ConfigurationManager::getGraphicsSettings() -> GraphicsSettings & {
+    auto ConfigurationManager::getGraphicsSettings() -> GraphicsSettings &
+    {
         return graphics_settings_;
     }
 
-    auto ConfigurationManager::getFontSettings() -> FontSettings & {
+    auto ConfigurationManager::getFontSettings() -> FontSettings &
+    {
         return font_settings_;
     }
 
-    auto ConfigurationManager::getPlayerSettings() -> PlayerSettings & {
+    auto ConfigurationManager::getPlayerSettings() -> PlayerSettings &
+    {
         return player_settings_;
     }
 
-    auto ConfigurationManager::getEnemySettings() -> EnemySettings & {
+    auto ConfigurationManager::getEnemySettings() -> EnemySettings &
+    {
         return enemy_settings_;
     }
 
-    auto ConfigurationManager::getBulletSettings() -> BulletSettings & {
+    auto ConfigurationManager::getBulletSettings() -> BulletSettings &
+    {
         return bullet_settings_;
     }
 
-    auto ConfigurationManager::getAssetsSettings() -> AssetsSettings & {
+    auto ConfigurationManager::getAssetsSettings() -> AssetsSettings &
+    {
         return asset_settings_;
     }
 
-    auto ConfigurationManager::Save() const -> bool {
-        try {
+    auto ConfigurationManager::Save() const -> bool
+    {
+        try
+        {
             libconfig::Setting &root = configuration_.getRoot();
             libconfig::Setting &window_settings = getOrCreateGroup(root, "window");
             libconfig::Setting &graphics_settings = getOrCreateGroup(root, "graphics");
@@ -194,7 +218,9 @@ namespace tools {
                      libconfig::Setting::TypeInt);
             setValue(graphics_settings, "vertical_sync_enabled", graphics_settings_.vertical_sync_enabled,
                      libconfig::Setting::TypeBoolean);
-        } catch ([[maybe_unused]] const libconfig::ConfigException &config_exception) {
+        }
+        catch ([[maybe_unused]] const libconfig::ConfigException &config_exception)
+        {
             std::cerr << "Error while saving configuration file: " << config_exception.what() << std::endl;
             return false;
         }
@@ -202,22 +228,26 @@ namespace tools {
     }
 
     auto ConfigurationManager::getOrCreateGroup(libconfig::Setting &root,
-                                                const std::string &key) -> libconfig::Setting & {
+                                                const std::string &key) -> libconfig::Setting &
+    {
         return getOrCreateKey(root, key, libconfig::Setting::TypeGroup);
     }
 
     auto ConfigurationManager::getOrCreateKey(libconfig::Setting &root, const std::string &key,
-                                              const libconfig::Setting::Type type) -> libconfig::Setting & {
-        if (!root.exists(key)) {
+                                              const libconfig::Setting::Type type) -> libconfig::Setting &
+    {
+        if (!root.exists(key))
+        {
             root.add(key, type);
         }
 
-        return root[key];
+        return root[key.c_str()];
     }
 
     template<typename T>
     auto ConfigurationManager::setValue(libconfig::Setting &root, const std::string &key, T &value,
-                                        const libconfig::Setting::Type type) -> void {
+                                        const libconfig::Setting::Type type) -> void
+    {
         auto &setting = getOrCreateKey(root, key, type);
         setting = value;
     }
