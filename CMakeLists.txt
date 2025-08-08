@@ -18,9 +18,6 @@ project(GameTemplate
 #
 ###########################################################################
 
-# TODO : Permet de forcer le compilateur CLang
-#SET(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "C++ compiler" FORCE)
-
 # C++23 (CLion limit to C++2b)
 set(CMAKE_CXX_STANDARD 20)
 
@@ -31,10 +28,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     # Optimisations supplémentaires pour les compilateurs GCC/Clang
     set(PERFORMANCE_FLAGS "-O3 -funroll-loops -ffast-math")
 
+    # On force l'include de cstdint cat c'est l'option par défaut avec CLion
+    # et l'on veut le même comportement dans le pipeline CI
     add_compile_options(-include cstdint)
+
+    # Ici on essaye d'avoir les mêmes options de compilation que dans le pipeline CI
     set(STRICT_COMPILE_OPTIONS
             -Werror -Wall -Wextra -Wpedantic -Wshadow
             -Wconversion -Wsign-conversion -Wattributes
+            -Wimplicit-int-float-conversion
     )
 elseif (MSVC)
     # Équivalent MSVC

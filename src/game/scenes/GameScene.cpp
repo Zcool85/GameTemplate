@@ -556,7 +556,7 @@ auto GameScene::render(sf::RenderTarget &render_target) -> void
         auto heart = sf::Sprite(game_.getAssets().getTexture("HEART"_texture)); // TODO : On peut faire bien mieux...
         for (auto i = 0; i < health_; i++)
         {
-            heart.setPosition({50.f * i, 0.f});
+            heart.setPosition({50.f * static_cast<float>(i), 0.f});
             render_target.draw(heart);
         }
 
