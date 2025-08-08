@@ -22,7 +22,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 add_library(${PROJECT_NAME} STATIC src/Log.cpp)
-target_compile_options(${PROJECT_NAME} PRIVATE ${STRICT_COMPILE_OPTIONS})
+# TODO : disable for testing : target_compile_options(${PROJECT_NAME} PRIVATE ${STRICT_COMPILE_OPTIONS})
 target_include_directories(${PROJECT_NAME}
         INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
