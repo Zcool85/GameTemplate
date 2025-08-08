@@ -8,7 +8,8 @@
 #include "pch.h"
 
 // Source: https://gist.github.com/Lee-R/3839813
-constexpr auto fnv1a_32(char const *s, const std::size_t count) -> std::size_t { // NOLINT(*-no-recursion)
+constexpr auto fnv1a_32(char const *s, const std::size_t count) -> std::size_t
+{ // NOLINT(*-no-recursion)
     return count ? (fnv1a_32(s, count - 1) ^ static_cast<std::size_t>(s[count - 1])) * 16777619u : 2166136261u;
 }
 
@@ -17,7 +18,8 @@ template<typename T>
 concept ValidTag = std::is_empty_v<T> && std::is_trivially_constructible_v<T>;
 
 template<ValidTag>
-struct strong_id {
+struct strong_id
+{
 private:
     std::size_t value_;
 
@@ -25,41 +27,46 @@ public:
     // Constructeurs
     template<std::size_t N>
     constexpr explicit strong_id(const char (&str)[N])
-        : value_(fnv1a_32(str, N - 1)) {
+        : value_(fnv1a_32(str, N - 1))
+    {
         static_assert(N > 1, "String cannot be empty");
         static_assert(N <= 64, "String too long for identifier");
     }
 
     constexpr explicit strong_id(const std::string &str)
-        : value_(fnv1a_32(str.c_str(), str.length())) {
+        : value_(fnv1a_32(str.c_str(), str.length()))
+    {
         assert(str.length() > 1);
         assert(str.length() <= 64);
     }
 
-    constexpr strong_id() : value_(0) {
-    }
+    constexpr strong_id() : value_(0) {}
 
-    constexpr explicit strong_id(const std::size_t value) : value_(value) {
-    }
+    constexpr explicit strong_id(const std::size_t value) : value_(value) {}
 
     // Opérateurs de comparaison
-    constexpr bool operator==(const strong_id &other) const noexcept {
+    constexpr bool operator==(const strong_id &other) const noexcept
+    {
         return value_ == other.value_;
     }
 
-    constexpr bool operator!=(const strong_id &other) const noexcept {
+    constexpr bool operator!=(const strong_id &other) const noexcept
+    {
         return value_ != other.value_;
     }
 
-    constexpr bool operator<(const strong_id &other) const noexcept {
+    constexpr bool operator<(const strong_id &other) const noexcept
+    {
         return value_ < other.value_;
     }
 
-    constexpr bool operator<=>(const strong_id &other) const noexcept {
+    constexpr std::strong_ordering operator<=>(const strong_id &other) const noexcept
+    {
         return value_ <=> other.value_;
     }
 
-    [[nodiscard]] constexpr std::size_t value() const noexcept {
+    [[nodiscard]] constexpr std::size_t value() const noexcept
+    {
         return value_;
     }
 
@@ -71,35 +78,29 @@ public:
 
 // Spécialisation std::hash pour unordered_map
 template<ValidTag TTag>
-struct std::hash<strong_id<TTag> > {
-    constexpr std::size_t operator()(const strong_id<TTag> &id) const noexcept {
+struct std::hash<strong_id<TTag> >
+{
+    constexpr std::size_t operator()(const strong_id<TTag> &id) const noexcept
+    {
         return id.value();
     }
 };
 
-struct SceneTag {
-};
+struct SceneTag {};
 
-struct FontTag {
-};
+struct FontTag {};
 
-struct TextureTag {
-};
+struct TextureTag {};
 
-struct SoundTag {
-};
+struct SoundTag {};
 
-struct MusicTag {
-};
+struct MusicTag {};
 
-struct AssetTag {
-};
+struct AssetTag {};
 
-struct ActionNameTag {
-};
+struct ActionNameTag {};
 
-struct ActionTypeTag {
-};
+struct ActionTypeTag {};
 
 using SceneId = strong_id<SceneTag>;
 using FontId = strong_id<FontTag>;
@@ -109,36 +110,44 @@ using MusicId = strong_id<MusicTag>;
 using ActionNameId = strong_id<ActionNameTag>;
 using ActionTypeId = strong_id<ActionTypeTag>;
 
-constexpr SceneId operator""_scene(const char *s, const std::size_t count) {
+constexpr SceneId operator""_scene(const char *s, const std::size_t count)
+{
     return SceneId(fnv1a_32(s, count));
 }
 
-constexpr FontId operator""_font(const char *s, const std::size_t count) {
+constexpr FontId operator""_font(const char *s, const std::size_t count)
+{
     return FontId(fnv1a_32(s, count));
 }
 
-constexpr TextureId operator""_texture(const char *s, const std::size_t count) {
+constexpr TextureId operator""_texture(const char *s, const std::size_t count)
+{
     return TextureId(fnv1a_32(s, count));
 }
 
-constexpr SoundId operator""_sound(const char *s, const std::size_t count) {
+constexpr SoundId operator""_sound(const char *s, const std::size_t count)
+{
     return SoundId(fnv1a_32(s, count));
 }
 
-constexpr MusicId operator""_music(const char *s, const std::size_t count) {
+constexpr MusicId operator""_music(const char *s, const std::size_t count)
+{
     return MusicId(fnv1a_32(s, count));
 }
 
-constexpr ActionNameId operator""_action_name(const char *s, const std::size_t count) {
+constexpr ActionNameId operator""_action_name(const char *s, const std::size_t count)
+{
     return ActionNameId(fnv1a_32(s, count));
 }
 
-constexpr ActionTypeId operator""_action_type(const char *s, const std::size_t count) {
+constexpr ActionTypeId operator""_action_type(const char *s, const std::size_t count)
+{
     return ActionTypeId(fnv1a_32(s, count));
 }
 
 
-inline void compile_time_test() {
+inline void compile_time_test()
+{
     const std::string toto = "toto";
     [[maybe_unused]] SceneId test{"toto"};
     [[maybe_unused]] const SceneId test2{toto};
