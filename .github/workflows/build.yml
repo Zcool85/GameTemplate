@@ -36,6 +36,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -y install libsfml-dev clang-17
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 50
           sudo update-alternatives --set c++ /usr/bin/clang++
 
       - name: ⚙️ Setup libconfig
