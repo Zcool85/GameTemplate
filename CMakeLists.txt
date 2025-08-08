@@ -26,12 +26,19 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Détection du compilateur et de l'architecture
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    set(NATIVE_OPTIMIZATION_FLAGS "-march=native")
+    #set(NATIVE_OPTIMIZATION_FLAGS "-march=native")
 
     # Optimisations supplémentaires pour les compilateurs GCC/Clang
     set(PERFORMANCE_FLAGS "-O3 -funroll-loops -ffast-math")
 
-    add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wattributes)
+    add_compile_options(-Werror)
+    add_compile_options(-Wall)
+    add_compile_options(-Wextra)
+    add_compile_options(-Wpedantic)
+    add_compile_options(-Wshadow)
+    add_compile_options(-Wconversion)
+    add_compile_options(-Wsign-conversion)
+    add_compile_options(-Wattributes)
 elseif (MSVC)
     # Équivalent MSVC
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
@@ -61,7 +68,7 @@ add_subdirectory(src)
 #
 ###########################################################################
 
-message(STATUS "Compilateur: ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Compilateur: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "Cible: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Type de build: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Standard C++: ${CMAKE_CXX_STANDARD}")
