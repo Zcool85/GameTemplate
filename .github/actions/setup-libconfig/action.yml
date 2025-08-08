@@ -6,7 +6,7 @@ inputs:
   version:
     description: 'libconfig version to install'
     required: false
-    default: '1.8.1'
+    default: 'v1.8.1'
 
 runs:
   using: 'composite'

@@ -12,7 +12,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   #BUILD_TYPE: Release
   SFML_VERSION: '3.0.1'
-  LIBCONFIG_VERSION: '1.8.1'
+  LIBCONFIG_VERSION: 'v1.8.1'
   CMAKE_BUILD_PARALLEL_LEVEL: ${{ github.event.inputs.parallel_jobs || '4' }}
 
 jobs:
