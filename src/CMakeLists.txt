@@ -28,6 +28,7 @@ FetchContent_MakeAvailable(argparse)
 ###########################################################################
 
 add_executable(${PROJECT_NAME} main.cpp)
+target_compile_options(${PROJECT_NAME} PRIVATE ${STRICT_COMPILE_OPTIONS})
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         argparse

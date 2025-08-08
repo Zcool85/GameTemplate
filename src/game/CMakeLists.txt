@@ -1,3 +1,9 @@
+project(GameLib
+        LANGUAGES CXX
+        VERSION 1.0
+        DESCRIPTION "Core game"
+)
+
 # Ajout d'un Pre-Compiled Header
 add_library(SharedPCH INTERFACE)
 target_precompile_headers(SharedPCH INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/pch.h)
@@ -47,7 +53,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui-sfml)
 
-add_library(GameLib STATIC
+add_library(${PROJECT_NAME} STATIC
         GameEngine.cpp
         tools/ConfigurationManager.cpp
         scenes/Scene.cpp
@@ -56,8 +62,8 @@ add_library(GameLib STATIC
         Assets.cpp
         physics/Physics.cpp
 )
-
-target_link_libraries(GameLib
+target_compile_options(${PROJECT_NAME} PRIVATE ${STRICT_COMPILE_OPTIONS})
+target_link_libraries(${PROJECT_NAME}
         PRIVATE
         config++
         SharedPCH
@@ -71,7 +77,7 @@ target_link_libraries(GameLib
         ecs::LogsLib
 )
 
-target_include_directories(GameLib PUBLIC .)
+target_include_directories(${PROJECT_NAME} PUBLIC .)
 
-add_library(GameLib::GameLib ALIAS GameLib)
+add_library(GameLib::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
