@@ -39,11 +39,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     add_compile_options(-Wconversion)
     add_compile_options(-Wattributes)
 
-    # NOTE : spdlog ne compile pas sur clang-17 avec -Wsign-conversion, mais il
-    # compile parfaitement avec cette option avec le compilateur de CLion (clang-16)
-    #if (APPLE)
-    add_compile_options(-Wsign-conversion)
-    #endif ()
+    # NOTE : spdlog ne compile pas sur clang-17 (Ubuntu x86_64 GNU 13.3.0) avec -Wsign-conversion, mais il
+    # compile parfaitement avec cette option avec le compilateur de CLion sur MacOS (Apple LLVM version 17.0.0 (clang-1700.0.42.4) arm64).
+    if (APPLE)
+        add_compile_options(-Wsign-conversion)
+    endif ()
 elseif (MSVC)
     # Équivalent MSVC
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
