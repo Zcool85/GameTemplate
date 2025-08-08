@@ -1,16 +1,24 @@
+# Ajout d'un Pre-Compiled Header
+add_library(SharedPCH INTERFACE)
+target_precompile_headers(SharedPCH INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/pch.h)
+target_link_libraries(SharedPCH
+        INTERFACE
+        SFML::System
+        ImGui-SFML::ImGui-SFML
+)
+
+
+#### OpenGL
+
+find_package(OpenGL REQUIRED)
+if (APPLE)
+    add_compile_definitions(GL_SILENCE_DEPRECATION)
+endif ()
+
 #### libconfig
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 find_package(Config++ REQUIRED)
-
-#### ecs
-
-include(FetchContent)
-FetchContent_Declare(
-        ecs
-        SOURCE_DIR ${CMAKE_SOURCE_DIR}/ecs
-)
-FetchContent_MakeAvailable(ecs)
 
 #### SFML
 
@@ -49,14 +57,9 @@ add_library(GameLib STATIC
         physics/Physics.cpp
 )
 
-# Ajout d'un Pre-Compiled Header
-add_library(SharedPCH INTERFACE)
-target_precompile_headers(SharedPCH INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/pch.h)
-
 target_link_libraries(GameLib
         PRIVATE
         config++
-        PUBLIC
         SharedPCH
         SFML::System
         SFML::Graphics
@@ -64,7 +67,8 @@ target_link_libraries(GameLib
         SFML::Window
         SFML::Network
         ImGui-SFML::ImGui-SFML
-        ecs::ecs
+        ecs::EcsLib
+        ecs::LogsLib
 )
 
 target_include_directories(GameLib PUBLIC .)

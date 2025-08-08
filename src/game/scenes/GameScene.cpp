@@ -4,10 +4,12 @@
 
 #include "GameScene.h"
 
+#include "Log.h"
 #include "physics/Physics.h"
 #include "scenes/MainMenuScene.h"
 
-static std::string set_score_text(int score) {
+static std::string set_score_text(int score)
+{
     return std::format("Score: {}", score);
 }
 
@@ -18,7 +20,8 @@ GameScene::GameScene(GameEngine &game)
       game_over_sound_{game_.getAssets().getSound("GAME_OVER"_sound)},
       kill_enemy_sound_{game_.getAssets().getSound("KILL_ENEMY"_sound)},
       spawn_enemy_sound_{game_.getAssets().getSound("SWEEP"_sound)},
-      health_{5} {
+      health_{5}
+{
     ECS_CORE_TRACE("GameScene constructor");
 
     const auto &font_settings = game_.configurationManager().getFontSettings();
@@ -46,7 +49,8 @@ GameScene::GameScene(GameEngine &game)
 
 GameScene::~GameScene() = default;
 
-auto GameScene::spawnPlayer() -> void {
+auto GameScene::spawnPlayer() -> void
+{
     const auto &player_settings = game_.configurationManager().getPlayerSettings();
     player_entity_handle_ = entity_manager_.createHandle();
 
@@ -78,7 +82,8 @@ auto GameScene::spawnPlayer() -> void {
     shape.circle.setPointCount(static_cast<std::size_t>(player_settings.shape_vertices));
 }
 
-auto GameScene::spawnEnemy() -> void {
+auto GameScene::spawnEnemy() -> void
+{
     const auto &enemy_settings = game_.configurationManager().getEnemySettings();
 
     const auto enemy_entity_index_ = entity_manager_.createIndex();
@@ -125,7 +130,8 @@ auto GameScene::spawnEnemy() -> void {
     score.score = 100 * static_cast<int>(shape.circle.getPointCount());
 }
 
-auto GameScene::spawnBullet(const ecs::Handle player_handle, const sf::Vector2f &target) -> void {
+auto GameScene::spawnBullet(const ecs::Handle player_handle, const sf::Vector2f &target) -> void
+{
     const auto &player_transform(entity_manager_.getComponent<CTransform>(player_handle));
 
     const sf::Vector2f direction = (target - player_transform.position).normalized();
@@ -163,14 +169,16 @@ auto GameScene::spawnBullet(const ecs::Handle player_handle, const sf::Vector2f 
     lifespan.lifespan = lifespan.remaining = bullet_settings.lifespan;
 }
 
-auto GameScene::spawnSmallEnemies(const ecs::EntityIndex enemy) -> void {
+auto GameScene::spawnSmallEnemies(const ecs::EntityIndex enemy) -> void
+{
     const auto &enemy_shape(entity_manager_.getComponent<CShape>(enemy));
     const auto &enemy_transform(entity_manager_.getComponent<CTransform>(enemy));
     const auto &enemy_score(entity_manager_.getComponent<CScore>(enemy));
 
     auto small_enemy_angle = enemy_transform.angle;
 
-    for (std::size_t i = 0; i < enemy_shape.circle.getPointCount(); ++i) {
+    for (std::size_t i = 0; i < enemy_shape.circle.getPointCount(); ++i)
+    {
         auto &enemy_settings = game_.configurationManager().getEnemySettings();
         const auto small_enemy_entity_index_ = entity_manager_.createIndex();
 
@@ -209,7 +217,8 @@ auto GameScene::spawnSmallEnemies(const ecs::EntityIndex enemy) -> void {
     }
 }
 
-auto GameScene::update(const sf::Time &delta_time, sf::RenderWindow &render_window) -> void {
+auto GameScene::update(const sf::Time &delta_time, sf::RenderWindow &render_window) -> void
+{
     ImGui::SFML::Update(render_window, delta_time);
 
     sEnemySpawner();
@@ -226,7 +235,8 @@ auto GameScene::update(const sf::Time &delta_time, sf::RenderWindow &render_wind
     current_frame_++;
 }
 
-auto GameScene::sMovement(const sf::Time delta_clock) -> void {
+auto GameScene::sMovement(const sf::Time delta_clock) -> void
+{
     if (!is_movements_system_active) return;
 
     const auto &player_settings = game_.configurationManager().getPlayerSettings();
@@ -236,27 +246,35 @@ auto GameScene::sMovement(const sf::Time delta_clock) -> void {
 
     sf::Vector2f direction;
 
-    if (input.up) {
+    if (input.up)
+    {
         direction.y = -1.f;
     }
-    if (input.down) {
+    if (input.down)
+    {
         direction.y = 1.f;
     }
-    if (input.left) {
+    if (input.left)
+    {
         direction.x = -1.f;
     }
-    if (input.right) {
+    if (input.right)
+    {
         direction.x = 1.f;
     }
 
     // TODO : Je ne sais pas comment faire mieux à date...
-    if (direction != sf::Vector2f(0.f, 0.f)) {
+    if (direction != sf::Vector2f(0.f, 0.f))
+    {
         transform.velocity = direction.normalized() * player_settings.speed;
-    } else {
+    }
+    else
+    {
         transform.velocity = sf::Vector2f(0.f, 0.f);
     }
 
-    if (input.shoot) {
+    if (input.shoot)
+    {
         input.shoot = false;
         spawnBullet(player_entity_handle_, game_.mapPixelToCoords(input.shoot_position));
         shoot_sound_.play();
@@ -274,7 +292,8 @@ auto GameScene::sMovement(const sf::Time delta_clock) -> void {
         });
 }
 
-auto GameScene::sUserInput(sf::Window &window) -> void {
+auto GameScene::sUserInput(sf::Window &window) -> void
+{
     auto &user_input(entity_manager_.getComponent<CInput>(player_entity_handle_));
 
     window.handleEvents(
@@ -293,7 +312,8 @@ auto GameScene::sUserInput(sf::Window &window) -> void {
             ImGui::SFML::ProcessEvent(window, mouse_button_pressed);
 
             // Pour le moment on fait simple
-            if (mouse_button_pressed.button == sf::Mouse::Button::Left) {
+            if (mouse_button_pressed.button == sf::Mouse::Button::Left)
+            {
                 user_input.shoot = true;
                 user_input.shoot_position = mouse_button_pressed.position;
             }
@@ -302,16 +322,20 @@ auto GameScene::sUserInput(sf::Window &window) -> void {
             ImGui::SFML::ProcessEvent(window, key_pressed);
 
             // Pour le moment on fait simple...
-            if (key_pressed.code == sf::Keyboard::Key::Z) {
+            if (key_pressed.code == sf::Keyboard::Key::Z)
+            {
                 user_input.up = true;
             }
-            if (key_pressed.code == sf::Keyboard::Key::Q) {
+            if (key_pressed.code == sf::Keyboard::Key::Q)
+            {
                 user_input.left = true;
             }
-            if (key_pressed.code == sf::Keyboard::Key::S) {
+            if (key_pressed.code == sf::Keyboard::Key::S)
+            {
                 user_input.down = true;
             }
-            if (key_pressed.code == sf::Keyboard::Key::D) {
+            if (key_pressed.code == sf::Keyboard::Key::D)
+            {
                 user_input.right = true;
             }
         },
@@ -319,16 +343,20 @@ auto GameScene::sUserInput(sf::Window &window) -> void {
             ImGui::SFML::ProcessEvent(window, key_released);
 
             // Pour le moment on fait simple...
-            if (key_released.code == sf::Keyboard::Key::Z) {
+            if (key_released.code == sf::Keyboard::Key::Z)
+            {
                 user_input.up = false;
             }
-            if (key_released.code == sf::Keyboard::Key::Q) {
+            if (key_released.code == sf::Keyboard::Key::Q)
+            {
                 user_input.left = false;
             }
-            if (key_released.code == sf::Keyboard::Key::S) {
+            if (key_released.code == sf::Keyboard::Key::S)
+            {
                 user_input.down = false;
             }
-            if (key_released.code == sf::Keyboard::Key::D) {
+            if (key_released.code == sf::Keyboard::Key::D)
+            {
                 user_input.right = false;
             }
         },
@@ -344,19 +372,22 @@ auto GameScene::sUserInput(sf::Window &window) -> void {
     );
 }
 
-auto GameScene::sEnemySpawner() -> void {
+auto GameScene::sEnemySpawner() -> void
+{
     if (!is_enemy_spawning_system_active) return;
 
     const auto &enemy_settings = game_.configurationManager().getEnemySettings();
 
-    if (current_frame_ % enemy_settings.spawn_interval == 0) {
+    if (current_frame_ % enemy_settings.spawn_interval == 0)
+    {
         spawnEnemy();
         // TODO : Pas fan...
         // spawn_enemy_sound_.play();
     }
 }
 
-auto GameScene::sLifespan() -> void {
+auto GameScene::sLifespan() -> void
+{
     if (!is_lifespan_system_active) return;
 
     entity_manager_.forEntitiesMatching<SLifespan>(
@@ -366,9 +397,12 @@ auto GameScene::sLifespan() -> void {
     CShape &shape
 ) {
             lifespan.remaining -= 1;
-            if (lifespan.remaining <= 0) {
+            if (lifespan.remaining <= 0)
+            {
                 entity_manager_.kill(entity_index);
-            } else {
+            }
+            else
+            {
                 const auto &fill_color = shape.circle.getFillColor();
                 const auto alpha = static_cast<unsigned char>((255 * lifespan.remaining) / lifespan.lifespan);
                 shape.circle.setFillColor(sf::Color{fill_color.r, fill_color.g, fill_color.b, alpha});
@@ -376,7 +410,8 @@ auto GameScene::sLifespan() -> void {
         });
 }
 
-auto GameScene::sCollision() -> void {
+auto GameScene::sCollision() -> void
+{
     if (!is_collision_system_active) return;
 
     auto &player_transform(entity_manager_.getComponent<CTransform>(player_entity_handle_));
@@ -403,10 +438,12 @@ auto GameScene::sCollision() -> void {
         ) {
                     if (!entity_manager_.isAlive(bullet_entity_index)) return;
                     if (Physics::isCollision(enemy_transform.position, bullet_transform.position,
-                                             enemy_collision.radius, bullet_collision.radius)) {
+                                             enemy_collision.radius, bullet_collision.radius))
+                    {
                         score_ += enemy_score.score;
 
-                        if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index)) {
+                        if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index))
+                        {
                             spawnSmallEnemies(enemy_entity_index);
                         }
                         entity_manager_.kill(enemy_entity_index);
@@ -420,20 +457,25 @@ auto GameScene::sCollision() -> void {
             if (!entity_manager_.isAlive(player_entity_handle_)) return;
 
             if (Physics::isCollision(enemy_transform.position, player_transform.position, enemy_collision.radius,
-                                     player_collision.radius)) {
-                if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index)) {
+                                     player_collision.radius))
+            {
+                if (!entity_manager_.hasTag<TSmallEnemy>(enemy_entity_index))
+                {
                     spawnSmallEnemies(enemy_entity_index);
                 }
                 entity_manager_.kill(enemy_entity_index);
                 entity_manager_.kill(player_entity_handle_);
 
                 health_ -= 1;
-                if (health_ <= 0) {
+                if (health_ <= 0)
+                {
                     game_over_sound_.play();
                     // TODO : GAME OVER
                     //game_.changeScene("GAME_OVER"_scene);
                     health_ = 5;
-                } else {
+                }
+                else
+                {
                     death_sound_.play();
                 }
 
@@ -442,16 +484,20 @@ auto GameScene::sCollision() -> void {
         });
 
     // Any object cannot cross window
-    if (player_transform.position.y < player_collision.radius) {
+    if (player_transform.position.y < player_collision.radius)
+    {
         player_transform.position.y = player_collision.radius;
     }
-    if (player_transform.position.x < player_collision.radius) {
+    if (player_transform.position.x < player_collision.radius)
+    {
         player_transform.position.x = player_collision.radius;
     }
-    if (player_transform.position.y > game_.windowSize().y - player_collision.radius) {
+    if (player_transform.position.y > game_.windowSize().y - player_collision.radius)
+    {
         player_transform.position.y = game_.windowSize().y - player_collision.radius;
     }
-    if (player_transform.position.x > game_.windowSize().y - player_collision.radius) {
+    if (player_transform.position.x > game_.windowSize().y - player_collision.radius)
+    {
         player_transform.position.x = game_.windowSize().y - player_collision.radius;
     }
 
@@ -464,31 +510,37 @@ auto GameScene::sCollision() -> void {
     [[maybe_unused]] const CShape &shape,
     [[maybe_unused]] const CScore &score
 ) {
-            if (transform.position.y < collision.radius) {
+            if (transform.position.y < collision.radius)
+            {
                 transform.position.y = collision.radius;
                 transform.velocity.y = -transform.velocity.y;
             }
-            if (transform.position.x < collision.radius) {
+            if (transform.position.x < collision.radius)
+            {
                 transform.position.x = collision.radius;
                 transform.velocity.x = -transform.velocity.x;
             }
-            if (transform.position.y > game_.windowSize().y - collision.radius) {
+            if (transform.position.y > game_.windowSize().y - collision.radius)
+            {
                 transform.position.y = game_.windowSize().y - collision.radius;
                 transform.velocity.y = -transform.velocity.y;
             }
-            if (transform.position.x > game_.windowSize().x - collision.radius) {
+            if (transform.position.x > game_.windowSize().x - collision.radius)
+            {
                 transform.position.x = game_.windowSize().x - collision.radius;
                 transform.velocity.x = -transform.velocity.x;
             }
         });
 }
 
-auto GameScene::render(sf::RenderTarget &render_target) -> void {
+auto GameScene::render(sf::RenderTarget &render_target) -> void
+{
     //shader_.setUniform("u_resolution", sf::Glsl::Vec2{ window_.getSize() });
     //shader_.setUniform("u_mouse", sf::Glsl::Vec2{ mouse_position });
     //shader_.setUniform("u_time", delta_clock.asSeconds());
 
-    if (is_render_system_active) {
+    if (is_render_system_active)
+    {
         entity_manager_.forEntitiesMatching<SRendering>(
             [&render_target]([[maybe_unused]] const ecs::EntityIndex entity_index, const CTransform &transform,
                              CShape &shape) {
@@ -502,7 +554,8 @@ auto GameScene::render(sf::RenderTarget &render_target) -> void {
 
         // Render hearts
         auto heart = sf::Sprite(game_.getAssets().getTexture("HEART"_texture)); // TODO : On peut faire bien mieux...
-        for (auto i = 0; i < health_; i++) {
+        for (auto i = 0; i < health_; i++)
+        {
             heart.setPosition({50.f * i, 0.f});
             render_target.draw(heart);
         }
@@ -516,7 +569,8 @@ auto GameScene::render(sf::RenderTarget &render_target) -> void {
     ImGui::SFML::Render(render_target);
 }
 
-auto GameScene::sGUI() -> void {
+auto GameScene::sGUI() -> void
+{
     if (!is_gui_system_active) return;
 
     auto &enemy_settings = game_.configurationManager().getEnemySettings();
@@ -525,8 +579,10 @@ auto GameScene::sGUI() -> void {
     ImGui::Text("Nombre d'entités : %lu", entity_manager_.getEntityCount());
 
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-    if (ImGui::BeginTabBar("GeometryWarsTabBar", tab_bar_flags)) {
-        if (ImGui::BeginTabItem("Systems")) {
+    if (ImGui::BeginTabBar("GeometryWarsTabBar", tab_bar_flags))
+    {
+        if (ImGui::BeginTabItem("Systems"))
+        {
             ImGui::Text("Systems tab\nPermet de désactiver les systèmes du jeu");
             ImGui::Checkbox("Movements", &is_movements_system_active);
             ImGui::Checkbox("Lifespan", &is_lifespan_system_active);
@@ -534,7 +590,8 @@ auto GameScene::sGUI() -> void {
             ImGui::Checkbox("Spawning", &is_enemy_spawning_system_active);
             ImGui::Indent();
             ImGui::SliderInt("Span", &enemy_settings.spawn_interval, 1, 5000);
-            if (ImGui::Button("Manual Spawn")) {
+            if (ImGui::Button("Manual Spawn"))
+            {
                 spawnEnemy();
             }
             ImGui::Unindent();
@@ -542,12 +599,15 @@ auto GameScene::sGUI() -> void {
             ImGui::Checkbox("Rendering", &is_render_system_active);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Entities")) {
+        if (ImGui::BeginTabItem("Entities"))
+        {
             ImGui::Text("Entities tab!\nPermet de visualiser toutes les entités du jeu");
 
-            if (ImGui::CollapsingHeader("Entities")) {
+            if (ImGui::CollapsingHeader("Entities"))
+            {
                 ImGui::Indent();
-                if (ImGui::CollapsingHeader("bullets")) {
+                if (ImGui::CollapsingHeader("bullets"))
+                {
                     ImGui::Indent();
                     entity_manager_.forEntitiesMatching<SBullets>(
                         [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
@@ -556,7 +616,8 @@ auto GameScene::sGUI() -> void {
                             ImGui::PushID(0);
                             ImGui::PushStyleColor(ImGuiCol_Button,
                                                   static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
-                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str()))
+                            {
                                 this->entity_manager_.kill(entity_index);
                                 entity_manager_.refresh();
                             }
@@ -570,7 +631,8 @@ auto GameScene::sGUI() -> void {
                     ImGui::Unindent();
                 }
 
-                if (ImGui::CollapsingHeader("Enemies")) {
+                if (ImGui::CollapsingHeader("Enemies"))
+                {
                     ImGui::Indent();
                     entity_manager_.forEntitiesMatching<SEnemies>(
                         [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
@@ -583,7 +645,8 @@ auto GameScene::sGUI() -> void {
                             ImGui::PushID(0);
                             ImGui::PushStyleColor(ImGuiCol_Button,
                                                   static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
-                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str()))
+                            {
                                 this->entity_manager_.kill(entity_index);
                                 entity_manager_.refresh();
                             }
@@ -597,7 +660,8 @@ auto GameScene::sGUI() -> void {
                     ImGui::Unindent();
                 }
 
-                if (ImGui::CollapsingHeader("Players")) {
+                if (ImGui::CollapsingHeader("Players"))
+                {
                     ImGui::Indent();
                     entity_manager_.forEntitiesMatching<SPlayers>(
                         [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
@@ -606,7 +670,8 @@ auto GameScene::sGUI() -> void {
                             ImGui::PushID(0);
                             ImGui::PushStyleColor(ImGuiCol_Button,
                                                   static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
-                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str()))
+                            {
                                 this->entity_manager_.kill(entity_index);
                                 entity_manager_.refresh();
                             }
@@ -620,7 +685,8 @@ auto GameScene::sGUI() -> void {
                     ImGui::Unindent();
                 }
 
-                if (ImGui::CollapsingHeader("Small enemies")) {
+                if (ImGui::CollapsingHeader("Small enemies"))
+                {
                     ImGui::Indent();
                     entity_manager_.forEntitiesMatching<SSmallEnemies>(
                         [this]([[maybe_unused]] const ecs::EntityIndex entity_index,
@@ -630,7 +696,8 @@ auto GameScene::sGUI() -> void {
                             ImGui::PushID(0);
                             ImGui::PushStyleColor(ImGuiCol_Button,
                                                   static_cast<ImVec4>(ImColor(shape.circle.getFillColor())));
-                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str())) {
+                            if (ImGui::Button(std::format("D##{}", entity_index.get()).c_str()))
+                            {
                                 this->entity_manager_.kill(entity_index);
                                 entity_manager_.refresh();
                             }

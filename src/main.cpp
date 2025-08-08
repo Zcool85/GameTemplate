@@ -1,10 +1,11 @@
 #include <filesystem>
 #include <argparse/argparse.hpp>
 
-#include "Ecs.h"
+#include "Log.h"
 #include "game/GameEngine.h"
 
-int main(const int argc, char *argv[]) {
+int main(const int argc, char *argv[])
+{
     ecs::Log::Init();
     ecs::Log::GetAppLogger()->warn("Logs initialisés !");
 
@@ -26,20 +27,25 @@ int main(const int argc, char *argv[]) {
     program.add_description("Run the game.");
     program.add_epilog("Made by Zéro Cool & Merlou.");
 
-    try {
+    try
+    {
         program.parse_args(argc, argv);
-    } catch (const std::exception &err) {
+    }
+    catch (const std::exception &err)
+    {
         ecs::Log::GetAppLogger()->critical(err.what());
         ecs::Log::GetAppLogger()->critical(program.help().str());
         return EXIT_FAILURE;
     }
 
-    if (!std::filesystem::exists(configuration_file_path)) {
+    if (!std::filesystem::exists(configuration_file_path))
+    {
         ecs::Log::GetAppLogger()->critical("Configration file {0} does not exist", configuration_file_path);
         return EXIT_FAILURE;
     }
 
-    if (!std::filesystem::exists(assets_configuration_file_path)) {
+    if (!std::filesystem::exists(assets_configuration_file_path))
+    {
         ecs::Log::GetAppLogger()->critical("Assets configuration file {0} does not exist",
                                            assets_configuration_file_path);
         return EXIT_FAILURE;
